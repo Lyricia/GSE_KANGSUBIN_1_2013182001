@@ -7,5 +7,5 @@
 *.ipch
 *.ilk
 .vs/
-.tlog
+*.tlog
 
