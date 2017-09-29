@@ -6,6 +6,10 @@
 *.pch
 *.ipch
 *.ilk
-.vs/
 *.tlog
+/vs
+/Debug
+/Release
+/x64
+
 
