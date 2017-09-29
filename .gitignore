@@ -6,4 +6,6 @@
 *.pch
 *.ipch
 *.ilk
+.vs/
+.tlog
 

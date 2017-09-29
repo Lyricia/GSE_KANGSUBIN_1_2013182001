@@ -15,17 +15,28 @@ but WITHOUT ANY WARRANTY.
 
 #include "Renderer.h"
 
+#include "Scene.h"
+
 Renderer *g_Renderer = NULL;
+Scene*	CurrentScene;
 
 void RenderScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
 
+
 	// Renderer Test
-	g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
+	//g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
+	CurrentScene->render();
 
 	glutSwapBuffers();
+}
+
+void Initialize()
+{
+	CurrentScene = new Scene();
+	CurrentScene->getRenderer(g_Renderer);
 }
 
 void Idle(void)
@@ -35,17 +46,34 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
+	x = x - 250;
+	y = -(y - 250);
+	CurrentScene->mouseinput(button, state, x, y);
+	RenderScene();
+}
+
+void MouseMove(int x, int y)
+{
+	x = x - WINDOW_WIDTH_HALF;
+	y = -(y - WINDOW_HEIGHT_HALF);
+	CurrentScene->mouseinput(0, 0, x, y);
 	RenderScene();
 }
 
 void KeyInput(unsigned char key, int x, int y)
 {
+	CurrentScene->keyinput(key);
 	RenderScene();
 }
 
 void SpecialKeyInput(int key, int x, int y)
 {
+	CurrentScene->keyspcialinput(key);
 	RenderScene();
+}
+
+void SceneChanger(Scene* scene) {
+	CurrentScene = scene;
 }
 
 int main(int argc, char **argv)
@@ -73,13 +101,17 @@ int main(int argc, char **argv)
 	{
 		std::cout << "Renderer could not be initialized.. \n";
 	}
+	
+	
+	
+	Initialize();
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
 	glutKeyboardFunc(KeyInput);
 	glutMouseFunc(MouseInput);
 	glutSpecialFunc(SpecialKeyInput);
-
+	glutPassiveMotionFunc(MouseMove);
 	glutMainLoop();
 
 	delete g_Renderer;
