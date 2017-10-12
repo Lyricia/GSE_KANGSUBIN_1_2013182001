@@ -1,14 +1,15 @@
 #pragma once
 #include "Object.h"
 
-
-
 class Scene
 {
 private:
-	Player* dummy;
-	Renderer* g_renderer = nullptr;
+	Player*		dummy;
+	Player*		dummy2;
+	Renderer*	g_renderer = nullptr;
+	RECT		screenOOBB;
 
+	bool dummyon = false;
 
 public:
 	void Init();

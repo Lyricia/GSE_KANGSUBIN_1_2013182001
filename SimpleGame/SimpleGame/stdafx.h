@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 #include <tchar.h>
+
+#include "Dependencies\glew.h"
+#include "Dependencies\freeglut.h"
 #include "Vector3D.h"
 
 #define WINDOW_HEIGHT	500

@@ -10,8 +10,7 @@ but WITHOUT ANY WARRANTY.
 
 #include "stdafx.h"
 #include <iostream>
-#include "Dependencies\glew.h"
-#include "Dependencies\freeglut.h"
+
 
 #include "Renderer.h"
 
@@ -22,8 +21,10 @@ Scene*	CurrentScene;
 
 void RenderScene(void)
 {
+	CurrentScene->update();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 
 	// Renderer Test
@@ -46,8 +47,9 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
-	x = x - 250;
-	y = -(y - 250);
+	x = x - WINDOW_WIDTH_HALF;
+	y = -(y - WINDOW_HEIGHT_HALF);
+
 	CurrentScene->mouseinput(button, state, x, y);
 	RenderScene();
 }
