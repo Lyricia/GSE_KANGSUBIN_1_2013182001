@@ -1,23 +1,27 @@
 #pragma once
 #include "Object.h"
 
+#define MAX_OBJECT 50
+
 class Scene
 {
 private:
-	Player*		dummy;
-	Player*		dummy2;
+	Player*		m_object[MAX_OBJECT];
+
 	Renderer*	g_renderer = nullptr;
 	RECT		screenOOBB;
 
 	bool dummyon = false;
 
 public:
-	void Init();
-
 	Scene();
 	~Scene();
+	void releaseScene();
 
+	void buildScene();
 	void getRenderer(Renderer* g_render) { g_renderer = g_render; }
+	
+	void CollisionChk(Player* id1, Player* id2);
 
 	void keyinput(unsigned char key);
 	void keyspcialinput(int key);
@@ -26,5 +30,3 @@ public:
 	void update();
 	void render();
 };
-
-void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, float r, float g, float b, float a);

@@ -1,13 +1,24 @@
 #include "stdafx.h"
-#include "Object.h"
 #include "Renderer.h"
 #include "Scene.h"
 
-void Scene::Init()
+Scene::Scene()
 {
-	dummy = new Player(1, 50, Vector3D<float>(0, 0, 0));
-	dummy2 = new Player(1, 50, Vector3D<float>(0, 0, 0));
-	dummy2->setVelocity(2, 1, 0);
+}
+
+Scene::~Scene()
+{
+}
+
+void Scene::buildScene()
+{
+	for (int i = 0; i < MAX_OBJECT; ++i) {
+		Vector3D<float> pos = { rand() % 500 - 250,rand() % 500 - 250 ,rand() % 500 - 250 };
+		Player* tmp = new Player(i, 10, pos);
+		tmp->setVelocity(rand() % 10 - 5, rand() % 10 - 5, 0);
+		tmp->setColor(COLOR{ 1,0,0,0 });
+		m_object[i] = tmp;
+	}
 
 	screenOOBB.bottom = -WINDOW_HEIGHT_HALF;
 	screenOOBB.top = WINDOW_HEIGHT_HALF;
@@ -15,22 +26,26 @@ void Scene::Init()
 	screenOOBB.right = WINDOW_WIDTH_HALF;
 }
 
-Scene::Scene()
+void Scene::releaseScene()
 {
-	Init();
+	if (m_object) {
+		for (int i = 0; i < MAX_OBJECT; ++i) {
+			if (m_object[i])
+				m_object[i]->releaseObject();
+		}
+		delete[] m_object;
+	}
 }
 
 
-Scene::~Scene()
-{
-}
 
 void Scene::keyinput(unsigned char key)
 {
 	switch (key) {
 	case 'q':
-		exit(0);
+		glutLeaveMainLoop();
 		break;
+
 	default:
 		break;
 	}
@@ -39,7 +54,7 @@ void Scene::keyinput(unsigned char key)
 void Scene::keyspcialinput(int key)
 {
 	switch (key) {
-	
+	case 1:
 	default:
 		break;
 	}
@@ -52,41 +67,35 @@ void Scene::mouseinput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		if (dummyon)		dummyon = false;
 		else if (!dummyon)	dummyon = true;
-		dummy2->setPosition(dummy->getPosition());
-		dummy2->setVelocity(rand() % 6 - 3, rand() % 6 - 3, 0);
 	}
+}
 
-	dummy->setPosition(x, y, 0);
+void Scene::CollisionChk(Player* id1, Player* id2)
+{
+	if (id1->isIntersect(id2->getPosition())) {
+
+	}
 }
 
 void Scene::update()
 {
-	dummy2->colisionchk(screenOOBB);
-	dummy2->move();
-
+	for (int i = 0; i < MAX_OBJECT; ++i)
+	{
+		for (int j = 0; j < MAX_OBJECT; ++j) {
+			if (i != j)
+				CollisionChk(m_object[i], m_object[j]);
+		}
+		m_object[i]->collisionchk(screenOOBB);
+		m_object[i]->update();
+	}
 }
+
+
 
 void Scene::render()
 {
-	int dummysize = dummy->getSize();
-	//g_renderer->DrawSolidRect(dummy->getPosition().x, dummy->getPosition().y, dummy->getPosition().z, 50, 1, 0, 0, 0);
-
-	if(dummyon)
-		DrawSolidRectByMatrix(dummy->getPosition(), g_renderer, dummysize, 1, 0, 1, 0);
-
-	DrawSolidRectByMatrix(dummy2->getPosition(), g_renderer, dummysize, 1, 0, 1, 0);
-	g_renderer->DrawSolidRect(WINDOW_WIDTH_HALF - dummysize / 2, WINDOW_HEIGHT_HALF - dummysize / 2, 0, dummysize, 1, 0.1, 0, 0);
-	g_renderer->DrawSolidRect(WINDOW_WIDTH_HALF - dummysize / 2, -WINDOW_HEIGHT_HALF + dummysize / 2, 0, dummysize, 1, 1, 0, 0);
-	g_renderer->DrawSolidRect(-WINDOW_WIDTH_HALF + dummysize / 2, WINDOW_HEIGHT_HALF - dummysize / 2, 0, dummysize, 1, 1, 0, 0);
-	g_renderer->DrawSolidRect(-WINDOW_WIDTH_HALF + dummysize / 2, -WINDOW_HEIGHT_HALF + dummysize / 2, 0, dummysize, 1, 0.1, 0, 0);
+	for (int i = 0; i < MAX_OBJECT; ++i)
+	{
+		m_object[i]->render(g_renderer);
+	}
 }
-
-
-void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, float r, float g, float b, float a)
-{
-	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, r, g, b, a);
-}
-
-
-
-

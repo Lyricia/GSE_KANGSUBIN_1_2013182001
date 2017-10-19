@@ -1,5 +1,12 @@
 #pragma once
 
+struct COLOR {
+	float r;
+	float g;
+	float b;
+	float a;
+};
+
 class Object
 {
 protected:
@@ -7,25 +14,30 @@ protected:
 	Vector3D<float>		m_Position;
 	Vector3D<float>		m_Velocity;
 	int					m_Size;
+	RECT				m_BoundingBox;
+	COLOR				m_Color;
 
 
 public:
 	Object() {};
 	Object(int id, int size, Vector3D<float> pos) : m_id(id), m_Position(pos),m_Size(size) {};
 	~Object() {};
+	void releaseObject();
 
 	Vector3D<float>	getPosition() { return m_Position; }
 	Vector3D<float>	getVelocity() { return m_Velocity; }
 	int				getSize() { return m_Size; }
 
-	void setPosition(int x, int y, int z) { m_Position = { x, y, z }; }
+	void setPosition(float x, float y, float z) { m_Position = { x, y, z }; }
 	void setPosition(Vector3D<float> pos) { m_Position = pos; }
-	void setVelocity(int x, int y, int z) { m_Velocity = { x, y, z }; }
+	void setVelocity(float x, float y, float z) { m_Velocity = { x, y, z }; }
+	void setOOBB(RECT boundingbox) { m_BoundingBox = boundingbox; }
+	void setColor(COLOR color) { m_Color = color; }
 	void move() { m_Position += m_Velocity; }
 	void move(Vector3D<float> vel) { m_Position += vel; }
 
 	virtual void update() = 0;
-	virtual void render() = 0;
+	virtual void render(Renderer* g_render) = 0;
 };
 
 
@@ -39,8 +51,12 @@ public:
 	~Player() {};
 
 	virtual void update();
-	virtual void render();
+	virtual void render(Renderer* g_render);
 
-	bool colisionchk(RECT b);
+	bool collisionchk(RECT b);
+	bool isIntersect(Vector3D<float> pos);
 
 };
+
+
+void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color);

@@ -26,9 +26,6 @@ void RenderScene(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-
-	// Renderer Test
-	//g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
 	CurrentScene->render();
 
 	glutSwapBuffers();
@@ -38,6 +35,7 @@ void Initialize()
 {
 	CurrentScene = new Scene();
 	CurrentScene->getRenderer(g_Renderer);
+	CurrentScene->buildScene();
 }
 
 void Idle(void)
@@ -116,6 +114,7 @@ int main(int argc, char **argv)
 	glutPassiveMotionFunc(MouseMove);
 	glutMainLoop();
 
+	CurrentScene->releaseScene();
 	delete g_Renderer;
 
     return 0;
