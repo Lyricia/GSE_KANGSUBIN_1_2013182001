@@ -12,14 +12,18 @@ Scene::~Scene()
 
 void Scene::buildScene()
 {
-	for (int i = 0; i < MAX_OBJECT; ++i) {
+	m_Player = new Player(100, 25, Vector3D<float>{0, 0, 0});
+	m_Player->setColor(COLOR{ 1,0,0,0 });
+	m_object[0] = m_Player;
+	
+	for (int i = 1; i < MAX_OBJECT; ++i) {
 		Vector3D<float> pos = { rand() % 500 - 250,rand() % 500 - 250 ,rand() % 500 - 250 };
-		Player* tmp = new Player(i, 10, pos);
-		tmp->setVelocity(rand() % 10 - 5, rand() % 10 - 5, 0);
+		Player* tmp = new Player(i, 25, pos);
+		tmp->setVelocity((rand() % 4 - 2) * 0.1f , (rand() % 4 - 2)*0.1f, 0);
 		tmp->setColor(COLOR{ 1,0,0,0 });
 		m_object[i] = tmp;
 	}
-
+	
 	screenOOBB.bottom = -WINDOW_HEIGHT_HALF;
 	screenOOBB.top = WINDOW_HEIGHT_HALF;
 	screenOOBB.left = -WINDOW_WIDTH_HALF;
@@ -64,16 +68,10 @@ void Scene::keyspcialinput(int key)
 // 밖에서 누르고 안에서 업 할 수도 있기 때문에
 void Scene::mouseinput(int button, int state, int x, int y)
 {
+	m_Player->setPosition(Vector3D<float>{x, y, 0});
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		if (dummyon)		dummyon = false;
 		else if (!dummyon)	dummyon = true;
-	}
-}
-
-void Scene::CollisionChk(Player* id1, Player* id2)
-{
-	if (id1->isIntersect(id2->getPosition())) {
-
 	}
 }
 
@@ -82,9 +80,12 @@ void Scene::update()
 	for (int i = 0; i < MAX_OBJECT; ++i)
 	{
 		for (int j = 0; j < MAX_OBJECT; ++j) {
-			if (i != j)
-				CollisionChk(m_object[i], m_object[j]);
+			if (i != j) {
+				if (m_object[i]->getTarget() == NULL || m_object[i]->getTarget() == m_object[j])
+					m_object[i]->isIntersect(m_object[j]);
+			}
 		}
+
 		m_object[i]->collisionchk(screenOOBB);
 		m_object[i]->update();
 	}
@@ -98,4 +99,5 @@ void Scene::render()
 	{
 		m_object[i]->render(g_renderer);
 	}
+	m_Player->render(g_renderer);
 }

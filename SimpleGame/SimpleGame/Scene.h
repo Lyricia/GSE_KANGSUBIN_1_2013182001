@@ -7,6 +7,7 @@ class Scene
 {
 private:
 	Player*		m_object[MAX_OBJECT];
+	Player*		m_Player;
 
 	Renderer*	g_renderer = nullptr;
 	RECT		screenOOBB;
@@ -20,8 +21,6 @@ public:
 
 	void buildScene();
 	void getRenderer(Renderer* g_render) { g_renderer = g_render; }
-	
-	void CollisionChk(Player* id1, Player* id2);
 
 	void keyinput(unsigned char key);
 	void keyspcialinput(int key);
