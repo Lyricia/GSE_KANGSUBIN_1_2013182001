@@ -9,11 +9,7 @@ but WITHOUT ANY WARRANTY.
 */
 
 #include "stdafx.h"
-#include <iostream>
-
-
 #include "Renderer.h"
-
 #include "Scene.h"
 
 Renderer *g_Renderer = NULL;
@@ -33,6 +29,8 @@ void RenderScene(void)
 
 void Initialize()
 {
+	srand((unsigned)time(NULL));
+
 	CurrentScene = new Scene();
 	CurrentScene->getRenderer(g_Renderer);
 	CurrentScene->buildScene();
@@ -84,6 +82,8 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(500, 500);
 	glutCreateWindow("Game Software Engineering KPU");
+
+
 
 	glewInit();
 	if (glewIsSupported("GL_VERSION_3_0"))

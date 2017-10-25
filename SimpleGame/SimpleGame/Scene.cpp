@@ -19,7 +19,7 @@ void Scene::buildScene()
 	for (int i = 1; i < MAX_OBJECT; ++i) {
 		Vector3D<float> pos = { rand() % 500 - 250,rand() % 500 - 250 ,rand() % 500 - 250 };
 		Player* tmp = new Player(i, 25, pos);
-		tmp->setVelocity((rand() % 4 - 2) * 0.1f , (rand() % 4 - 2)*0.1f, 0);
+		tmp->setVelocity((rand() % 4 - 2) , (rand() % 4 - 2), 0);
 		tmp->setColor(COLOR{ 1,0,0,0 });
 		m_object[i] = tmp;
 	}
