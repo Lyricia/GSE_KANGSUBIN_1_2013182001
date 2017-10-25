@@ -22,3 +22,5 @@ SimpleGame/.vs/SimpleGame/v15/.suo
 *.db
 *.ipch
 *.opendb
+*.ipdb
+*.iobj
