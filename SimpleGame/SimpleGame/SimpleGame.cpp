@@ -11,9 +11,11 @@ but WITHOUT ANY WARRANTY.
 #include "stdafx.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include "Timer.h"
 
-Renderer *g_Renderer = NULL;
-Scene*	CurrentScene;
+Renderer	*g_Renderer = NULL;
+Scene*		CurrentScene;
+Timer*		g_Timer;
 
 void RenderScene(void)
 {
@@ -31,8 +33,12 @@ void Initialize()
 {
 	srand((unsigned)time(NULL));
 
+	g_Timer = new Timer();
+	g_Timer->Init();
+
 	CurrentScene = new Scene();
-	CurrentScene->getRenderer(g_Renderer);
+	CurrentScene->setRenderer(g_Renderer);
+	CurrentScene->setTimer(g_Timer);
 	CurrentScene->buildScene();
 }
 

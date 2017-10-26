@@ -9,10 +9,10 @@ void Object::releaseObject()
 bool Object::collisionchk(RECT b)
 {
 	if (m_Position.x > b.right || m_Position.x < b.left) {
-		setVelocity(m_Velocity.x *= -1, m_Velocity.y, m_Velocity.z);
+		setDirection(m_Direction.x *= -1, m_Direction.y, m_Direction.z);
 	}
 	if (m_Position.y > b.top || m_Position.y < b.bottom) {
-		setVelocity(m_Velocity.x, m_Velocity.y *= -1, m_Velocity.z);
+		setDirection(m_Direction.x, m_Direction.y *= -1, m_Direction.z);
 	}
 	return true;
 }
@@ -36,9 +36,10 @@ bool Object::isIntersect(Object* target)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-void Player::update()
+void Player::update(const double timeElapsed)
 {
-	move();
+	m_Life -= timeElapsed;
+	move(timeElapsed);
 }
 
 void Player::render(Renderer* g_render)

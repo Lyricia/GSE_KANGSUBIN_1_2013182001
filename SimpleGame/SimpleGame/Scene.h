@@ -1,18 +1,25 @@
 #pragma once
 #include "Object.h"
 
-#define MAX_OBJECT 50
+#define MAX_OBJECT 11
+
+class Timer;
 
 class Scene
 {
 private:
 	Player*		m_object[MAX_OBJECT];
-	Player*		m_Player;
+	//Player*		m_Player;
+
+	RECT		screenOOBB;
+	bool dummyon = false;
 
 	Renderer*	g_renderer = nullptr;
-	RECT		screenOOBB;
+	Timer*		g_Timer = nullptr;
 
-	bool dummyon = false;
+	int			m_objptr = 1;
+	int		livecounter = 0;
+
 
 public:
 	Scene();
@@ -20,7 +27,8 @@ public:
 	void releaseScene();
 
 	void buildScene();
-	void getRenderer(Renderer* g_render) { g_renderer = g_render; }
+	void setRenderer(Renderer* g_render) { g_renderer = g_render; }
+	void setTimer(Timer* t) { g_Timer = t; }
 
 	void keyinput(unsigned char key);
 	void keyspcialinput(int key);

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <tchar.h>
-#include <time.h>
+#include <chrono>
 
 #include "Dependencies\glew.h"
 #include "Dependencies\freeglut.h"
@@ -17,6 +17,8 @@
 
 #define WINDOW_HEIGHT_HALF	250
 #define WINDOW_WIDTH_HALF	250
+
+#define EPSILON			0.000001f
 
 enum DIR { LEFT, RIGHT, TOP, BOTTOM };
 
