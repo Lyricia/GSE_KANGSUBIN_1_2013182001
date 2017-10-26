@@ -1,4 +1,6 @@
 #pragma once
+
+
 class Timer
 {
 	std::chrono::system_clock::time_point	m_CurrentTime;

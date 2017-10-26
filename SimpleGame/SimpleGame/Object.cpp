@@ -8,10 +8,10 @@ void Object::releaseObject()
 
 bool Object::collisionchk(RECT b)
 {
-	if (m_Position.x > b.right || m_Position.x < b.left) {
+	if (m_Position.x > 250 || m_Position.x < -250) {
 		setDirection(m_Direction.x *= -1, m_Direction.y, m_Direction.z);
 	}
-	if (m_Position.y > b.top || m_Position.y < b.bottom) {
+	if (m_Position.y > 250 || m_Position.y < -250) {
 		setDirection(m_Direction.x, m_Direction.y *= -1, m_Direction.z);
 	}
 	return true;
@@ -35,10 +35,20 @@ bool Object::isIntersect(Object* target)
 	return false;
 }
 
+void Object::resetObject()
+{
+	m_Position = { -500, -500, 0 };
+	m_Direction = { 0,0,0 };
+	m_Speed = 0;
+	m_TargetBind = nullptr;
+	m_Life = -1;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::update(const double timeElapsed)
 {
-	m_Life -= timeElapsed;
+	if (m_Life > 0)
+		m_Life -= timeElapsed;
 	move(timeElapsed);
 }
 

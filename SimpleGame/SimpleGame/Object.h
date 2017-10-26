@@ -30,7 +30,7 @@ public:
 
 	Vector3D<float>	getPosition() { return m_Position; }
 	int				getSize() { return m_Size; }
-	bool			isAlive() { if (m_Life < 0) return false; else return true; }
+	bool			isAlive() { if (m_Life <= 0) return false; else return true; }
 
 	void setPosition(float x, float y, float z) { m_Position = { x, y, z }; }
 	void setPosition(Vector3D<float> pos) { m_Position = pos; }
@@ -46,13 +46,15 @@ public:
 
 	void setTarget(Object* target) { m_TargetBind = target; }
 	Object* getTarget() { return m_TargetBind; }
-	void releaseTarget() { m_TargetBind = NULL; }
+	void releaseTarget() { m_TargetBind = nullptr; }
 
 	bool collisionchk(RECT b);
 	bool isIntersect(Object* target);
 
 	virtual void update(const double timeElapsed) = 0;
 	virtual void render(Renderer* g_render) = 0;
+
+	void resetObject();
 };
 
 

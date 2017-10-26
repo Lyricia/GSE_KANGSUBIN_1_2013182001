@@ -3,6 +3,8 @@
 #include "Timer.h"
 #include "Scene.h"
 
+using namespace std;
+
 Scene::Scene()
 {
 }
@@ -17,6 +19,10 @@ void Scene::buildScene()
 	//m_Player->setColor(COLOR{ 1,0,0,0 });
 	//m_object[0] = m_Player;
 	
+	for (int i = 0; i < MAX_OBJECT; ++i) {
+		m_object[i] = new Player();
+	}
+
 	screenOOBB.bottom = -WINDOW_HEIGHT_HALF;
 	screenOOBB.top = WINDOW_HEIGHT_HALF;
 	screenOOBB.left = -WINDOW_WIDTH_HALF;
@@ -63,16 +69,14 @@ void Scene::mouseinput(int button, int state, int x, int y)
 {
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-		if (livecounter < 10) {
+		if (m_objptr != -1) {
 			Vector3D<float> pos = { x, y, 0 };
 			Player* p = new Player(-1, 25, pos);
 			p->setDirection(Vector3D<float>((rand() % 5 - 2.5f), (rand() % 5 - 2.5f), 0.f).Normalize());
 			p->setSpeed(100);
 			p->setColor(COLOR{ 1,0,0,0 });
-			p->setLifetime(35.f);
+			p->setLifetime(10.f);
 			m_object[m_objptr] = p;
-			m_objptr = (m_objptr++) % 10;
-			livecounter++;
 		}
 	}
 }
@@ -82,11 +86,13 @@ void Scene::update()
 	g_Timer->getTimeset();
 	double timeElapsed = g_Timer->getTimeElapsed();
 
+	cout << timeElapsed << endl;
+
 	for (int i = 0; i < MAX_OBJECT; ++i)
 	{
-		if (m_object[i]) {
+		if (m_object[i]->isAlive()) {
 			for (int j = 0; j < MAX_OBJECT; ++j) {
-				if (m_object[j]) {
+				if (m_object[j]->isAlive()) {
 					if (i != j) {
 						if (m_object[i]->getTarget() == NULL || m_object[i]->getTarget() == m_object[j])
 							m_object[i]->isIntersect(m_object[j]);
@@ -94,21 +100,24 @@ void Scene::update()
 				}
 			}
 			m_object[i]->collisionchk(screenOOBB);
-
-			if (!m_object[i]->isAlive()) {
-				m_object[i]->setPosition({ -500, -500, 0 });
-				livecounter--;
-				if (livecounter > 0)
-					livecounter = 0;
-			}
-			else if (m_object[i]->isAlive())
-				m_object[i]->update(timeElapsed);
+			m_object[i]->update(timeElapsed);
 		}
+		else
+			m_object[i]->resetObject();
 	}
+
+	for (int i = 0, j = 0; i < MAX_OBJECT; ++i) {
+		if (!m_object[i]->isAlive()) {
+			m_objptr = i;
+			break;
+		}
+		else
+			m_objptr = -1;
+	}
+
+	if (livecounter < 0)
+		livecounter = 0;
 }
-
-
-
 
 void Scene::render()
 {

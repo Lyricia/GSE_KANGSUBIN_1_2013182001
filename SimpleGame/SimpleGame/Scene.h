@@ -1,7 +1,7 @@
 #pragma once
 #include "Object.h"
 
-#define MAX_OBJECT 11
+#define MAX_OBJECT 10
 
 class Timer;
 
@@ -17,8 +17,8 @@ private:
 	Renderer*	g_renderer = nullptr;
 	Timer*		g_Timer = nullptr;
 
-	int			m_objptr = 1;
-	int		livecounter = 0;
+	int			m_objptr = 0;
+	int			livecounter = 0;
 
 
 public:

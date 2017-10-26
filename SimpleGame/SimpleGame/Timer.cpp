@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Timer.h"
 
-#define FPS_LIMIT 144
+#define FPS_LIMIT 144.0
 
 
 void Timer::Init()
@@ -16,7 +16,7 @@ void Timer::getTimeset()
 	if (m_TimeElapsed.count() < EPSILON) 
 		m_TimeElapsed = std::chrono::duration<double>::zero();
 
-	if (m_TimeElapsed.count() > (1 / FPS_LIMIT)) {
+	if (m_TimeElapsed.count() > (1.0f / FPS_LIMIT)) {
 		m_CurrentTime = std::chrono::system_clock::now();
 	}
 }
