@@ -5,7 +5,7 @@
 template<typename Ty>
 class Vector3D {
 private:
-	const float EffectiveEffer = 0.0001f; // ºÎµ¿¼Ò¼öÁ¡ Á¤¹Ðµµ
+	const float EffectiveEffer = 0.01f;
 
 public:
 	Ty x;
@@ -22,7 +22,8 @@ public:
 
 	Vector3D Normalize()
 	{
-		float fLength = Length(); if (fLength < EffectiveEffer)
+		float fLength = Length(); 
+		if (fLength > EffectiveEffer)
 		{
 			static_cast<float>(x) /= fLength; static_cast<float>(y) /= fLength; static_cast<float>(z) /= fLength;
 		}

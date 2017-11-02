@@ -10,12 +10,13 @@ struct COLOR {
 class Object
 {
 protected:
-	int					m_id;
+	OBJTYPE				m_type;
 	Vector3D<float>		m_Position;
 	Vector3D<float>		m_Direction;
 	float				m_Speed;
 	int					m_Size;
 	RECT				m_BoundingBox;
+	COLOR				m_DefaultColor;
 	COLOR				m_Color;
 
 	Object*				m_TargetBind = NULL;
@@ -24,7 +25,7 @@ protected:
 
 public:
 	Object() {};
-	Object(int id, int size, Vector3D<float> pos) : m_id(id), m_Position(pos),m_Size(size) {};
+	Object(OBJTYPE type, int size, Vector3D<float> pos) : m_type(type), m_Position(pos),m_Size(size) {};
 	~Object() {};
 	void releaseObject();
 
@@ -41,14 +42,18 @@ public:
 	void setColor(COLOR color) { m_Color = color; }
 
 	void setLifetime(double lifetime) { m_Life = lifetime; }
+	void decreaseLife() { m_Life--; }
 
 	void move(const double timeElapsed) { m_Position += m_Direction * m_Speed * timeElapsed; };
 
 	void setTarget(Object* target) { m_TargetBind = target; }
 	Object* getTarget() { return m_TargetBind; }
+
+	OBJTYPE getType() { return m_type; }
+
 	void releaseTarget() { m_TargetBind = nullptr; }
 
-	bool collisionchk(RECT b);
+	bool wallchk(RECT b);
 	bool isIntersect(Object* target);
 
 	virtual void update(const double timeElapsed) = 0;
@@ -64,12 +69,47 @@ private:
 
 public:
 	Player() {};
-	Player(int id, int size, Vector3D<float> pos) :Object(id, size, pos) {};
+	Player(OBJTYPE type, int size, Vector3D<float> pos) :Object(type, size, pos) {};
 	~Player() {};
 
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* g_render);
 };
+
+class Missle : public Object
+{
+private:
+
+public:
+	Missle() {};
+	Missle(OBJTYPE type, int size, Vector3D<float> pos) :Object(type, size, pos) {};
+	~Missle() {};
+
+	virtual void update(const double timeElapsed);
+	virtual void render(Renderer* g_render);
+};
+
+class Building : public Object
+{
+private:
+	Missle*		m_Missle[1000];
+	int			m_MissleCounter = 0;
+	double		m_shoottime = 0.f;
+
+public:
+	Building() {};
+	Building(int size, Vector3D<float> pos) :Object(OBJTYPE::OBJ_BUILDING, size, pos) {
+		for (int i = 0; i < 1000; ++i)
+			m_Missle[i] = new Missle();
+	};
+	~Building() {};
+
+	void ShootMissle();
+
+	virtual void update(const double timeElapsed);
+	virtual void render(Renderer* g_render);
+};
+
 
 
 void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color);

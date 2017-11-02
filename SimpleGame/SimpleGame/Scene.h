@@ -1,15 +1,15 @@
 #pragma once
 #include "Object.h"
 
-#define MAX_OBJECT 10
+#define MAX_OBJECT 100
 
 class Timer;
 
 class Scene
 {
 private:
-	Player*		m_object[MAX_OBJECT];
-	//Player*		m_Player;
+	Player*		m_Player[MAX_OBJECT];
+	Building*	m_Building[1];
 
 	RECT		screenOOBB;
 	bool dummyon = false;

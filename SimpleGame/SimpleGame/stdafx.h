@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <tchar.h>
 #include <chrono>
+#include <list>
 
 #include "Dependencies\glew.h"
 #include "Dependencies\freeglut.h"
@@ -20,5 +21,13 @@
 
 #define EPSILON			0.000001f
 
+using namespace std;
+
 enum DIR { LEFT, RIGHT, TOP, BOTTOM };
 
+enum OBJTYPE {
+	OBJ_BUILDING,
+	OBJ_CHARACTER,
+	OBJ_BULLET,
+	OBJ_ARROW
+};
