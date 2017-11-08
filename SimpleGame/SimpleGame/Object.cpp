@@ -20,8 +20,9 @@ bool Object::wallchk(RECT b)
 
 bool Object::isIntersect(Object* target)
 {
-	if (abs(m_Position.x - target->getPosition().x) < m_Size &&
-		abs(m_Position.y - target->getPosition().y) < m_Size)
+	if ((m_Position.x - target->getPosition().x)*(m_Position.x - target->getPosition().x) +
+		(m_Position.y - target->getPosition().y)*(m_Position.y - target->getPosition().y) <
+		(m_Size+target->getSize())*(m_Size + target->getSize())*0.25)
 	{
 		setTarget(target);
 		target->setTarget(this);
@@ -48,8 +49,8 @@ void Object::resetObject()
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void Player::update(const double timeElapsed)
 {
-	if (m_Life > 0)
-		m_Life -= timeElapsed;
+	if (m_Lifetime > 0)
+		//m_Lifetime -= timeElapsed;
 	move(timeElapsed);
 }
 
@@ -70,8 +71,9 @@ Missle* Building::ShootMissle(const double timeElapsed)
 	m_shoottime += timeElapsed;
 	if (m_shoottime > 0.5) {
 		m_shoottime = 0;
-		Missle* m = new Missle(OBJTYPE::OBJ_BULLET, 10, Vector3D<float>{0, 0, 0});
+		Missle* m = new Missle(OBJTYPE::OBJ_BULLET, 2, Vector3D<float>{0, 0, 0});
 		m->setLifetime(5);
+		m->setLife(20);
 		m->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
 		m->setSpeed(300);
 		return m;
@@ -93,7 +95,6 @@ void Building::render(Renderer * g_render)
 
 void Missle::update(const double timeElapsed)
 {
-	m_Life -= timeElapsed;
 	move(timeElapsed);
 }
 

@@ -27,8 +27,9 @@ void Scene::buildScene()
 		m_Player[i] = new Player();
 	}
 
-	m_Building[0] = new Building(40, Vector3D<float>{0, 0, 0});
+	m_Building[0] = new Building(50, Vector3D<float>{0, 0, 0});
 	m_Building[0]->setLifetime(10.f);
+	m_Building[0]->setLife(500.f);
 	m_Building[0]->setColor(COLOR{ 0,1,0,0 });
 }
 
@@ -82,11 +83,12 @@ void Scene::mouseinput(int button, int state, int x, int y)
 		if (m_objptr != -1)
 		{
 			Vector3D<float> pos = { x, y, 0 };
-			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 25, pos);
-			p->setDirection(Vector3D<float>((rand() % 5 - 2.5f), (rand() % 5 - 2.5f), 0.f).Normalize());
+			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 10, pos);
+			p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
 			p->setSpeed(300);
 			p->setColor(COLOR{ 1,0,0,0 });
 			p->setLifetime(10.f);
+			p->setLife(10.f);
 			m_Player[m_objptr] = p;
 		}
 	}
@@ -127,7 +129,7 @@ void Scene::update()
 			if (m_Building[0]->isIntersect(m_Player[i]))
 			{
 				m_Building[0]->setColor(COLOR{ 1,1,0,0 });
-				m_Building[0]->decreaseLife();
+				m_Building[0]->decreaseLife(m_Player[i]->getLife());
 				m_Player[i]->resetObject();
 			}
 			else
@@ -135,8 +137,11 @@ void Scene::update()
 		}
 		for (auto missle : m_Missle)
 		{
-			if (m_Player[i]->isIntersect(missle)) {
-				m_Player[i]->resetObject();
+			if (m_Player[i]->isIntersect(missle)) 
+			{
+				m_Player[i]->decreaseLife(missle->getLife());
+				if (!m_Player[i]->isAlive())
+					m_Player[i]->resetObject();
 				m_Missle.remove(missle);
 				break;
 			}

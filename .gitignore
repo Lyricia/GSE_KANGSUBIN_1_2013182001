@@ -11,16 +11,8 @@
 /Debug
 /Release
 /x64
-
-
-*.ipch
-SimpleGame/.vs/SimpleGame/v15/.suo
-SimpleGame/.vs/SimpleGame/v15/.suo
+*.suo
 *.db
-*.ipch
-SimpleGame/.vs/SimpleGame/v15/.suo
-*.db
-*.ipch
 *.opendb
 *.ipdb
 *.iobj

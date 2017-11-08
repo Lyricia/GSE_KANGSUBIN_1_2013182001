@@ -22,6 +22,7 @@ protected:
 	Object*				m_TargetBind = NULL;
 
 	double				m_Life = 0;
+	double				m_Lifetime = 0;
 
 public:
 	Object() {};
@@ -31,7 +32,7 @@ public:
 
 	Vector3D<float>	getPosition() { return m_Position; }
 	int				getSize() { return m_Size; }
-	bool			isAlive() { if (m_Life <= 0) return false; else return true; }
+	bool			isAlive() { if (m_Life <= 0 || m_Lifetime <= 0) return false; else return true; }
 
 	void setPosition(float x, float y, float z) { m_Position = { x, y, z }; }
 	void setPosition(Vector3D<float> pos) { m_Position = pos; }
@@ -41,15 +42,18 @@ public:
 	void setOOBB(RECT boundingbox) { m_BoundingBox = boundingbox; }
 	void setColor(COLOR color) { m_Color = color; }
 
-	void setLifetime(double lifetime) { m_Life = lifetime; }
-	void decreaseLife() { m_Life--; }
+	void setLifetime(double lifetime) { m_Lifetime = lifetime; }
+	void setLife(double life) { m_Life = life; }
+	void decreaseLife(double dmg) { m_Life -= dmg; }
 
 	void move(const double timeElapsed) { m_Position += m_Direction * m_Speed * timeElapsed; };
 
 	void setTarget(Object* target) { m_TargetBind = target; }
 	Object* getTarget() { return m_TargetBind; }
-
 	OBJTYPE getType() { return m_type; }
+
+	double getLife() { return m_Life; }
+	double getLifetime() { return m_Lifetime; }
 
 	void releaseTarget() { m_TargetBind = nullptr; }
 
