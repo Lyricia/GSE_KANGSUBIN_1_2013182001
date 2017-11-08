@@ -37,7 +37,7 @@ void Initialize()
 	g_Timer->Init();
 
 	CurrentScene = new Scene();
-	CurrentScene->setRenderer(g_Renderer);
+	//CurrentScene->setRenderer(g_Renderer);
 	CurrentScene->setTimer(g_Timer);
 	CurrentScene->buildScene();
 }
@@ -100,15 +100,6 @@ int main(int argc, char **argv)
 	{
 		std::cout << "GLEW 3.0 not supported\n ";
 	}
-
-	// Initialize Renderer
-	g_Renderer = new Renderer(500, 500);
-	if (!g_Renderer->IsInitialized())
-	{
-		std::cout << "Renderer could not be initialized.. \n";
-	}
-	
-	
 	
 	Initialize();
 

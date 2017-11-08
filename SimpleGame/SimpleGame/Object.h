@@ -92,24 +92,16 @@ public:
 class Building : public Object
 {
 private:
-	Missle*		m_Missle[1000];
-	int			m_MissleCounter = 0;
 	double		m_shoottime = 0.f;
 
 public:
 	Building() {};
-	Building(int size, Vector3D<float> pos) :Object(OBJTYPE::OBJ_BUILDING, size, pos) {
-		for (int i = 0; i < 1000; ++i)
-			m_Missle[i] = new Missle();
-	};
+	Building(int size, Vector3D<float> pos) :Object(OBJTYPE::OBJ_BUILDING, size, pos) {}
 	~Building() {};
 
-	void ShootMissle();
-
+	Missle* ShootMissle(const double timeElapsed);
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* g_render);
 };
-
-
 
 void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color);

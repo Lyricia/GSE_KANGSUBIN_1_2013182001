@@ -19,6 +19,7 @@
 #define WINDOW_HEIGHT_HALF	250
 #define WINDOW_WIDTH_HALF	250
 
+
 #define EPSILON			0.000001f
 
 using namespace std;

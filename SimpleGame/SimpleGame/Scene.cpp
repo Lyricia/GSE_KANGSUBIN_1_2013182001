@@ -15,24 +15,29 @@ Scene::~Scene()
 
 void Scene::buildScene()
 {
-	for (int i = 0; i < MAX_OBJECT - 1; ++i) {
+	// Initialize Renderer
+	m_Renderer = new Renderer(500, 500);
+	if (!m_Renderer->IsInitialized())
+	{
+		std::cout << "Renderer could not be initialized.. \n";
+	}
+
+	for (int i = 0; i < MAX_OBJECT - 1; ++i) 
+	{
 		m_Player[i] = new Player();
 	}
 
 	m_Building[0] = new Building(40, Vector3D<float>{0, 0, 0});
 	m_Building[0]->setLifetime(10.f);
 	m_Building[0]->setColor(COLOR{ 0,1,0,0 });
-
-	screenOOBB.bottom = -WINDOW_HEIGHT_HALF;
-	screenOOBB.top = WINDOW_HEIGHT_HALF;
-	screenOOBB.left = -WINDOW_WIDTH_HALF;
-	screenOOBB.right = WINDOW_WIDTH_HALF;
 }
 
 void Scene::releaseScene()
 {
-	if (m_Player) {
-		for (int i = 0; i < MAX_OBJECT; ++i) {
+	if (m_Player) 
+	{
+		for (int i = 0; i < MAX_OBJECT; ++i)
+		{
 			if (m_Player[i])
 				m_Player[i]->releaseObject();
 		}
@@ -46,7 +51,8 @@ void Scene::releaseScene()
 
 void Scene::keyinput(unsigned char key)
 {
-	switch (key) {
+	switch (key)
+	{
 	case 'q':
 		glutLeaveMainLoop();
 		break;
@@ -58,7 +64,8 @@ void Scene::keyinput(unsigned char key)
 
 void Scene::keyspcialinput(int key)
 {
-	switch (key) {
+	switch (key)
+	{
 	case 1:
 	default:
 		break;
@@ -70,8 +77,10 @@ void Scene::keyspcialinput(int key)
 void Scene::mouseinput(int button, int state, int x, int y)
 {
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-		if (m_objptr != -1) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) 
+	{
+		if (m_objptr != -1)
+		{
 			Vector3D<float> pos = { x, y, 0 };
 			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 25, pos);
 			p->setDirection(Vector3D<float>((rand() % 5 - 2.5f), (rand() % 5 - 2.5f), 0.f).Normalize());
@@ -88,51 +97,64 @@ void Scene::update()
 	g_Timer->getTimeset();
 	double timeElapsed = g_Timer->getTimeElapsed();
 
-	m_Building[0]->update(timeElapsed);
-
-	for (int i = 0; i < MAX_OBJECT-1; ++i)
+	if (m_Building[0]->isAlive()) 
 	{
-		m_Player[i]->update(timeElapsed);
-		m_Player[i]->wallchk(screenOOBB );
-
-		if (m_Player[i]->isAlive()) {
-			for (int j = 0; j < MAX_OBJECT - 1; ++j) {
-				if (m_Player[j]->isAlive()) {
-					if (i != j) {
-						if (m_Player[i]->getTarget() == NULL || m_Player[i]->getTarget() == m_Player[j])
-							m_Player[i]->isIntersect(m_Player[j]);
-					}
-				}
-			}
-			
-			// wall check
-			
+		Missle* m = m_Building[0]->ShootMissle(timeElapsed);
+		if (m != NULL)
+		{
+			m_Missle.push_back(m);
 		}
-		else
-			m_Player[i]->resetObject();
 	}
 
-	for (int i = 0; i < MAX_OBJECT-1; ++i) {
-		if (m_Player[i]->isAlive() && m_Building[0]->isAlive()) {
-			if (m_Building[0]->isIntersect(m_Player[i])) {
+	for (auto missle : m_Missle)
+	{
+		missle->wallchk(screenOOBB);
+		if (missle->isAlive())
+			missle->update(timeElapsed);
+		else
+		{
+			m_Missle.remove(missle);
+			break;
+		}
+	}
+
+	for (int i = 0; i < MAX_OBJECT - 1; ++i)
+	{
+		m_Player[i]->update(timeElapsed);
+		m_Player[i]->wallchk(screenOOBB);
+		if (m_Player[i]->isAlive() && m_Building[0]->isAlive())
+		{
+			if (m_Building[0]->isIntersect(m_Player[i]))
+			{
 				m_Building[0]->setColor(COLOR{ 1,1,0,0 });
 				m_Building[0]->decreaseLife();
 				m_Player[i]->resetObject();
 			}
 			else
-				m_Building[0]->setColor(COLOR{ 0,1 ,0,0 });
+				m_Building[0]->setColor(COLOR{ 0,1,0,0 });
+		}
+		for (auto missle : m_Missle)
+		{
+			if (m_Player[i]->isIntersect(missle)) {
+				m_Player[i]->resetObject();
+				m_Missle.remove(missle);
+				break;
+			}
 		}
 	}
 
 
-	for (int i = 0; i < MAX_OBJECT - 1; ++i) {
-		if (!m_Player[i]->isAlive()) {
+	for (int i = 0; i < MAX_OBJECT - 1; ++i)
+	{
+		if (!m_Player[i]->isAlive())
+		{
 			m_objptr = i;
 			break;
 		}
 		else
 			m_objptr = -1;
 	}
+
 }
 
 void Scene::render()
@@ -140,9 +162,13 @@ void Scene::render()
 	for (int i = 0; i < MAX_OBJECT-1; ++i)
 	{
 		if (m_Player[i]->isAlive())
-			m_Player[i]->render(g_renderer);
+			m_Player[i]->render(m_Renderer);
 	}
 	if (m_Building[0]->isAlive())
-		m_Building[0]->render(g_renderer);
+		m_Building[0]->render(m_Renderer);
 
+	for (auto missle : m_Missle)
+	{
+		missle->render(m_Renderer);
+	}
 }

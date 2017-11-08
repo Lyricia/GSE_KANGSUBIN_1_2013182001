@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Object.h"
 
+
 void Object::releaseObject()
 {
 }
@@ -64,36 +65,27 @@ void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, CO
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Building::ShootMissle()
+Missle* Building::ShootMissle(const double timeElapsed)
 {
-	Missle* m = new Missle(OBJTYPE::OBJ_BULLET, 10, Vector3D<float>{0, 0, 0});
-	m->setLifetime(20);
-	m->setDirection(Vector3D<float>((rand() % 5 - 2.5f), (rand() % 5 - 2.5f), 0.f).Normalize());
-	m->setSpeed(300);
-	m_Missle[m_MissleCounter] = m;
-	m_MissleCounter++;
+	m_shoottime += timeElapsed;
+	if (m_shoottime > 0.5) {
+		m_shoottime = 0;
+		Missle* m = new Missle(OBJTYPE::OBJ_BULLET, 10, Vector3D<float>{0, 0, 0});
+		m->setLifetime(5);
+		m->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
+		m->setSpeed(300);
+		return m;
+	}
+	return nullptr;
 }
 
 void Building::update(const double timeElapsed)
 {
-	m_shoottime += timeElapsed;
-	if (m_shoottime > 1) {
-		m_shoottime = 0;
-		ShootMissle();
-	}
-	for (int i = 0; i < m_MissleCounter; ++i) {
-		if (m_Missle[i]->isAlive()) {
-			m_Missle[i]->update(timeElapsed);
-		}
-	}
 }
 
 void Building::render(Renderer * g_render)
 {
 	DrawSolidRectByMatrix(m_Position, g_render, m_Size, m_Color);
-	for (int i = 0; i < m_MissleCounter; ++i) {
-		m_Missle[i]->render(g_render);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,11 +93,11 @@ void Building::render(Renderer * g_render)
 
 void Missle::update(const double timeElapsed)
 {
+	m_Life -= timeElapsed;
 	move(timeElapsed);
 }
 
 void Missle::render(Renderer * g_render)
 {
 	DrawSolidRectByMatrix(m_Position, g_render, m_Size, m_Color);
-
 }
