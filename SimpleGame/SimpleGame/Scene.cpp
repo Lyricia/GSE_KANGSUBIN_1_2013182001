@@ -22,32 +22,20 @@ void Scene::buildScene()
 		std::cout << "Renderer could not be initialized.. \n";
 	}
 
-	for (int i = 0; i < MAX_OBJECT - 1; ++i) 
-	{
-		m_Player[i] = new Player();
-	}
-
 	m_Building[0] = new Building(50, Vector3D<float>{0, 0, 0});
 	m_Building[0]->setLifetime(10.f);
 	m_Building[0]->setLife(500.f);
-	m_Building[0]->setColor(COLOR{ 0,1,0,0 });
+	m_Building[0]->setColor(COLOR{ 0,1,0,1 });
+
+	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
+	dummy->setLife(-1);
+	m_Player.push_back(dummy);
 }
 
 void Scene::releaseScene()
 {
-	if (m_Player) 
-	{
-		for (int i = 0; i < MAX_OBJECT; ++i)
-		{
-			if (m_Player[i])
-				m_Player[i]->releaseObject();
-		}
-
-		delete[] m_Player;
-	}
 	delete[] m_Building;
 }
-
 
 
 void Scene::keyinput(unsigned char key)
@@ -78,19 +66,17 @@ void Scene::keyspcialinput(int key)
 void Scene::mouseinput(int button, int state, int x, int y)
 {
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) 
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
-		if (m_objptr != -1)
-		{
-			Vector3D<float> pos = { x, y, 0 };
-			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 10, pos);
-			p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-			p->setSpeed(300);
-			p->setColor(COLOR{ 1,0,0,0 });
-			p->setLifetime(10.f);
-			p->setLife(10.f);
-			m_Player[m_objptr] = p;
-		}
+		Vector3D<float> pos = { x, y, 0 };
+		Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 10, pos);
+		p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
+		p->setSpeed(300);
+		p->setColor(COLOR{ 1,0,0,1 });
+		p->setLifetime(10.f);
+		p->setLife(10.f);
+		p->setID(playerid++);
+		m_Player.push_back(p);
 	}
 }
 
@@ -99,81 +85,118 @@ void Scene::update()
 	g_Timer->getTimeset();
 	double timeElapsed = g_Timer->getTimeElapsed();
 
-	if (m_Building[0]->isAlive()) 
+	for (auto p : m_Player)
 	{
-		Missle* m = m_Building[0]->ShootMissle(timeElapsed);
-		if (m != NULL)
+		if (p->isAlive())
 		{
+			p->wallchk(screenOOBB);
+			p->update(timeElapsed);
+		}
+	}
+
+	for (auto a : m_Arrow)
+	{
+		if (a->isAlive())
+		{
+			a->wallchk(screenOOBB);
+			a->update(timeElapsed);
+		}
+
+
+	}
+
+	for (auto m : m_Missle)
+	{
+		if (m->isAlive())
+		{
+			m->wallchk(screenOOBB);
+			m->update(timeElapsed);
+		}
+	}
+
+
+	for (auto arrow : m_Arrow)
+	{
+		if (arrow->isIntersect(m_Building[0]))
+		{
+			m_Building[0]->decreaseLife(arrow->getLife());
+			m_Arrow.remove(arrow);
+			break;
+		}
+	}
+
+	if (m_Building[0]->isAlive())
+	{
+		if (m_Building[0]->cooltimeChk(timeElapsed))
+		{
+			Projectile* m = m_Building[0]->ShootMissle();
 			m_Missle.push_back(m);
 		}
 	}
 
-	for (auto missle : m_Missle)
+	for (auto it = m_Player.begin(); it !=m_Player.end();)
 	{
-		missle->wallchk(screenOOBB);
-		if (missle->isAlive())
-			missle->update(timeElapsed);
-		else
+		Player* p = *it++;
+		if (p->isAlive())
 		{
-			m_Missle.remove(missle);
-			break;
-		}
-	}
-
-	for (int i = 0; i < MAX_OBJECT - 1; ++i)
-	{
-		m_Player[i]->update(timeElapsed);
-		m_Player[i]->wallchk(screenOOBB);
-		if (m_Player[i]->isAlive() && m_Building[0]->isAlive())
-		{
-			if (m_Building[0]->isIntersect(m_Player[i]))
+			if (m_Building[0]->isAlive() && m_Building[0]->isIntersect(p))
 			{
-				m_Building[0]->setColor(COLOR{ 1,1,0,0 });
-				m_Building[0]->decreaseLife(m_Player[i]->getLife());
-				m_Player[i]->resetObject();
-			}
-			else
-				m_Building[0]->setColor(COLOR{ 0,1,0,0 });
-		}
-		for (auto missle : m_Missle)
-		{
-			if (m_Player[i]->isIntersect(missle)) 
-			{
-				m_Player[i]->decreaseLife(missle->getLife());
-				if (!m_Player[i]->isAlive())
-					m_Player[i]->resetObject();
-				m_Missle.remove(missle);
+				m_Building[0]->decreaseLife(p->getLife());
+				m_Player.remove(p);
 				break;
 			}
 		}
-	}
-
-
-	for (int i = 0; i < MAX_OBJECT - 1; ++i)
-	{
-		if (!m_Player[i]->isAlive())
+		for (auto a : m_Arrow)
 		{
-			m_objptr = i;
-			break;
+			if (a->getOwner() != p->getID())
+			{
+				if (p->isIntersect(a))
+				{
+					p->decreaseLife(a->getLife());
+					if (!p->isAlive()) {
+						m_Player.remove(p);
+						m_Arrow.remove(a);
+						break;
+					}
+				}
+			}
 		}
-		else
-			m_objptr = -1;
+		for(auto m : m_Missle)
+		{
+			if (p->isIntersect(m))
+			{
+				p->decreaseLife(m->getLife());
+				if (!p->isAlive())
+				{
+					m_Player.remove(p);
+					m_Missle.remove(m);
+					break;
+				}
+			}
+		}
+		if (p->cooltimeChk(timeElapsed) && p->isAlive())
+		{
+			Projectile* a = p->shoot();
+			a->setOwner(p->getID());
+			m_Arrow.push_back(a);
+		}
 	}
-
 }
-
 void Scene::render()
 {
-	for (int i = 0; i < MAX_OBJECT-1; ++i)
-	{
-		if (m_Player[i]->isAlive())
-			m_Player[i]->render(m_Renderer);
-	}
 	if (m_Building[0]->isAlive())
 		m_Building[0]->render(m_Renderer);
-
+	
+	for (auto p : m_Player)
+		p->render(m_Renderer);
+	
 	for (auto missle : m_Missle)
 	{
 		missle->render(m_Renderer);
+	}
+	
+	for (auto arrow : m_Arrow)
+	{
+		arrow->render(m_Renderer);
 	}
 }

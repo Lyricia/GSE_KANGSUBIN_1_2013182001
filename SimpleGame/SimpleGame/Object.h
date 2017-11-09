@@ -10,6 +10,7 @@ struct COLOR {
 class Object
 {
 protected:
+	int					m_id;
 	OBJTYPE				m_type;
 	Vector3D<float>		m_Position;
 	Vector3D<float>		m_Direction;
@@ -41,9 +42,10 @@ public:
 	void setSpeed(float speed) { m_Speed = speed; }
 	void setOOBB(RECT boundingbox) { m_BoundingBox = boundingbox; }
 	void setColor(COLOR color) { m_Color = color; }
-
+	void setID(int id) { m_id = id; }
 	void setLifetime(double lifetime) { m_Lifetime = lifetime; }
 	void setLife(double life) { m_Life = life; }
+	
 	void decreaseLife(double dmg) { m_Life -= dmg; }
 
 	void move(const double timeElapsed) { m_Position += m_Direction * m_Speed * timeElapsed; };
@@ -54,7 +56,7 @@ public:
 
 	double getLife() { return m_Life; }
 	double getLifetime() { return m_Lifetime; }
-
+	const int getID() { return m_id; }
 	void releaseTarget() { m_TargetBind = nullptr; }
 
 	bool wallchk(RECT b);
@@ -66,10 +68,26 @@ public:
 	void resetObject();
 };
 
+class Projectile : public Object
+{
+private:
+	int		m_Owner;
+
+public:
+	Projectile() {};
+	Projectile(OBJTYPE type, int size, Vector3D<float> pos) : Object(type, size, pos) {};
+	~Projectile() {};
+
+	void setOwner(int id) { m_Owner = id; }
+	int getOwner() { return m_Owner; }
+	virtual void update(const double timeElapsed);
+	virtual void render(Renderer* g_render);
+};
 
 class Player : public Object
 {
 private:
+	float	m_cooltime = 0;
 
 public:
 	Player() {};
@@ -78,32 +96,23 @@ public:
 
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* g_render);
-};
-
-class Missle : public Object
-{
-private:
-
-public:
-	Missle() {};
-	Missle(OBJTYPE type, int size, Vector3D<float> pos) :Object(type, size, pos) {};
-	~Missle() {};
-
-	virtual void update(const double timeElapsed);
-	virtual void render(Renderer* g_render);
+	Projectile* shoot();
+	bool cooltimeChk(const double timeElapsed);
 };
 
 class Building : public Object
 {
 private:
-	double		m_shoottime = 0.f;
+	double		m_cooltime = 0.f;
+	double		m_damagedtime = 0.f;
 
 public:
 	Building() {};
-	Building(int size, Vector3D<float> pos) :Object(OBJTYPE::OBJ_BUILDING, size, pos) {}
+	Building(int size, Vector3D<float> pos) : Object(OBJTYPE::OBJ_BUILDING, size, pos) {}
 	~Building() {};
 
-	Missle* ShootMissle(const double timeElapsed);
+	Projectile* ShootMissle();
+	bool cooltimeChk(const double timeElapsed);
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* g_render);
 };
