@@ -22,12 +22,13 @@ protected:
 
 	Object*				m_TargetBind = NULL;
 
-	double				m_Life = 0;
-	double				m_Lifetime = 0;
+	double				m_Life = 0.f;
+	double				m_Lifetime = 0.f;
+	double				m_damagedtime = 0.f;
 
 public:
 	Object() {};
-	Object(OBJTYPE type, int size, Vector3D<float> pos) : m_type(type), m_Position(pos),m_Size(size) {};
+	Object(OBJTYPE type, int size, Vector3D<float> pos) : m_type(type), m_Position(pos), m_Size(size) {};
 	~Object() {};
 	void releaseObject();
 
@@ -41,12 +42,13 @@ public:
 	void setDirection(float x, float y, float z) { m_Direction = { x, y, z }; }
 	void setSpeed(float speed) { m_Speed = speed; }
 	void setOOBB(RECT boundingbox) { m_BoundingBox = boundingbox; }
+	void setDefaultColor(COLOR color) { m_DefaultColor = m_Color = color; }
 	void setColor(COLOR color) { m_Color = color; }
 	void setID(int id) { m_id = id; }
 	void setLifetime(double lifetime) { m_Lifetime = lifetime; }
 	void setLife(double life) { m_Life = life; }
 	
-	void decreaseLife(double dmg) { m_Life -= dmg; }
+	void decreaseLife(double dmg) { m_Life -= dmg; m_damagedtime = 0.1f; }
 
 	void move(const double timeElapsed) { m_Position += m_Direction * m_Speed * timeElapsed; };
 
@@ -63,7 +65,7 @@ public:
 	bool isIntersect(Object* target);
 
 	virtual void update(const double timeElapsed) = 0;
-	virtual void render(Renderer* g_render) = 0;
+	virtual void render(Renderer* renderer, int texID = NULL) = 0;
 
 	void resetObject();
 };
@@ -81,7 +83,7 @@ public:
 	void setOwner(int id) { m_Owner = id; }
 	int getOwner() { return m_Owner; }
 	virtual void update(const double timeElapsed);
-	virtual void render(Renderer* g_render);
+	virtual void render(Renderer* renderer, int texID = NULL);
 };
 
 class Player : public Object
@@ -95,7 +97,7 @@ public:
 	~Player() {};
 
 	virtual void update(const double timeElapsed);
-	virtual void render(Renderer* g_render);
+	virtual void render(Renderer* renderer, int texID = NULL);
 	Projectile* shoot();
 	bool cooltimeChk(const double timeElapsed);
 };
@@ -104,7 +106,7 @@ class Building : public Object
 {
 private:
 	double		m_cooltime = 0.f;
-	double		m_damagedtime = 0.f;
+	COLOR		hitColor = { 1,1,0,1 };
 
 public:
 	Building() {};
@@ -114,7 +116,15 @@ public:
 	Projectile* ShootMissle();
 	bool cooltimeChk(const double timeElapsed);
 	virtual void update(const double timeElapsed);
-	virtual void render(Renderer* g_render);
+	virtual void render(Renderer* renderer, int texID = NULL);
 };
 
-void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color);
+inline void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color)
+{
+	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a);
+}
+
+inline void DrawTexturedRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, GLuint texID)
+{
+	Renderer->DrawTexturedRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, texID);
+}

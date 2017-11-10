@@ -25,11 +25,13 @@ void Scene::buildScene()
 	m_Building[0] = new Building(50, Vector3D<float>{0, 0, 0});
 	m_Building[0]->setLifetime(10.f);
 	m_Building[0]->setLife(500.f);
-	m_Building[0]->setColor(COLOR{ 0,1,0,1 });
+	m_Building[0]->setDefaultColor(COLOR{ 0,1,0,1 });
 
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
 	dummy->setLife(-1);
 	m_Player.push_back(dummy);
+
+	tex1 = m_Renderer->CreatePngTexture("Assets/HOS.png");
 }
 
 void Scene::releaseScene()
@@ -69,10 +71,10 @@ void Scene::mouseinput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
 		Vector3D<float> pos = { x, y, 0 };
-		Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 10, pos);
+		Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 15, pos);
 		p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
 		p->setSpeed(300);
-		p->setColor(COLOR{ 1,0,0,1 });
+		p->setDefaultColor(COLOR{ 1,0,0,1 });
 		p->setLifetime(10.f);
 		p->setLife(10.f);
 		p->setID(playerid++);
@@ -101,8 +103,6 @@ void Scene::update()
 			a->wallchk(screenOOBB);
 			a->update(timeElapsed);
 		}
-
-
 	}
 
 	for (auto m : m_Missle)
@@ -111,17 +111,6 @@ void Scene::update()
 		{
 			m->wallchk(screenOOBB);
 			m->update(timeElapsed);
-		}
-	}
-
-
-	for (auto arrow : m_Arrow)
-	{
-		if (arrow->isIntersect(m_Building[0]))
-		{
-			m_Building[0]->decreaseLife(arrow->getLife());
-			m_Arrow.remove(arrow);
-			break;
 		}
 	}
 
@@ -134,16 +123,26 @@ void Scene::update()
 		}
 	}
 
+	for (auto arrow : m_Arrow)
+	{
+		if (arrow->isIntersect(m_Building[0]))
+		{
+			m_Building[0]->decreaseLife(arrow->getLife());
+			m_Arrow.remove(arrow);
+			break;
+		}
+	}
+
 	for (auto it = m_Player.begin(); it !=m_Player.end();)
 	{
 		Player* p = *it++;
-		if (p->isAlive())
+ 		if (p->isAlive())
 		{
 			if (m_Building[0]->isAlive() && m_Building[0]->isIntersect(p))
 			{
 				m_Building[0]->decreaseLife(p->getLife());
 				m_Player.remove(p);
-				break;
+				continue;
 			}
 		}
 		for (auto a : m_Arrow)
@@ -182,21 +181,19 @@ void Scene::update()
 		}
 	}
 }
+
 void Scene::render()
 {
 	if (m_Building[0]->isAlive())
-		m_Building[0]->render(m_Renderer);
+		m_Building[0]->render(m_Renderer, tex1);
 	
 	for (auto p : m_Player)
 		p->render(m_Renderer);
 	
 	for (auto missle : m_Missle)
-	{
 		missle->render(m_Renderer);
-	}
 	
 	for (auto arrow : m_Arrow)
-	{
 		arrow->render(m_Renderer);
-	}
+
 }

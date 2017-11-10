@@ -19,7 +19,8 @@ private:
 	Timer*		g_Timer = nullptr;
 
 	int			playerid = 0;
-
+	
+	int			tex1;
 public:
 	Scene();
 	~Scene();

@@ -22,7 +22,7 @@ bool Object::isIntersect(Object* target)
 {
 	if ((m_Position.x - target->getPosition().x)*(m_Position.x - target->getPosition().x) +
 		(m_Position.y - target->getPosition().y)*(m_Position.y - target->getPosition().y) <
-		(m_Size+target->getSize())*(m_Size + target->getSize())*0.25)
+		(m_Size + target->getSize())*(m_Size + target->getSize())*0.25)
 	{
 		setTarget(target);
 		target->setTarget(this);
@@ -32,7 +32,7 @@ bool Object::isIntersect(Object* target)
 	else {
 		releaseTarget();
 		target->releaseTarget();
-		setColor(COLOR{ 1,0,0,1 });
+		setColor(m_DefaultColor);
 	}
 	return false;
 }
@@ -52,9 +52,9 @@ void Player::update(const double timeElapsed)
 	move(timeElapsed);
 }
 
-void Player::render(Renderer* g_render)
+void Player::render(Renderer* renderer, int texID)
 {
-	DrawSolidRectByMatrix(m_Position, g_render, m_Size, m_Color);
+	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
 }
 
 bool Player::cooltimeChk(const double timeElapsed)
@@ -70,9 +70,9 @@ bool Player::cooltimeChk(const double timeElapsed)
 
 Projectile* Player::shoot()
 {
-	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 20, Vector3D<float>{0, 0, 0});
+	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 10, Vector3D<float>{0, 0, 0});
 	a->setPosition(getPosition());
-	a->setColor(COLOR{ 0, 0, 1,1 });
+	a->setDefaultColor(COLOR{ 0, 0, 1, 1 } );
 	a->setLifetime(5);
 	a->setLife(20);
 	a->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
@@ -80,27 +80,25 @@ Projectile* Player::shoot()
 	return a;
 }
 
-void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color)
-{
-	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a);
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 Projectile* Building::ShootMissle()
 {
-	Projectile* m = new Projectile(OBJTYPE::OBJ_BULLET, 20, Vector3D<float>{0, 0, 0});
+	Projectile* m = new Projectile(OBJTYPE::OBJ_BULLET, 10, Vector3D<float>{0, 0, 0});
 	m->setLifetime(5);
 	m->setLife(20);
 	m->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
 	m->setSpeed(300);
-	m->setColor(COLOR{ 0,0,1,1 });
+	m->setDefaultColor(COLOR{ 0,0,0,1 });
 	return m;
 }
 
 bool Building::cooltimeChk(const double timeElapsed)
 {
 	m_cooltime += timeElapsed;
+	if (m_damagedtime > 0)
+		m_damagedtime -= timeElapsed;
+	
 	if (m_cooltime > 0.5)
 	{
 		m_cooltime = 0;
@@ -113,9 +111,13 @@ void Building::update(const double timeElapsed)
 {
 }
 
-void Building::render(Renderer * g_render)
+void Building::render(Renderer* renderer, int texID)
 {
-	DrawSolidRectByMatrix(m_Position, g_render, m_Size, m_Color);
+	if (m_damagedtime <= 0)
+		DrawTexturedRectByMatrix(m_Position, renderer, m_Size, m_Color, texID);
+		//DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
+	
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +128,7 @@ void Projectile::update(const double timeElapsed)
 	move(timeElapsed);
 }
 
-void Projectile::render(Renderer * g_render)
+void Projectile::render(Renderer* renderer, int texID)
 {
-	DrawSolidRectByMatrix(m_Position, g_render, m_Size, m_Color);
+	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
 }
