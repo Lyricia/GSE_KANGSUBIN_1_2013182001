@@ -7,12 +7,12 @@ void Object::releaseObject()
 {
 }
 
-bool Object::wallchk(RECT b)
+bool Object::wallchk()
 {
-	if (m_Position.x > 240 || m_Position.x < -240) {
+	if (m_Position.x > WINDOW_WIDTH / 2 || m_Position.x < -WINDOW_WIDTH / 2) {
 		setDirection(m_Direction.x *= -1, m_Direction.y, m_Direction.z);
 	}
-	if (m_Position.y > 240 || m_Position.y < -240) {
+	if (m_Position.y > WINDOW_HEIGHT / 2 || m_Position.y < -WINDOW_HEIGHT / 2) {
 		setDirection(m_Direction.x, m_Direction.y *= -1, m_Direction.z);
 	}
 	return true;
@@ -60,7 +60,7 @@ void Player::render(Renderer* renderer, int texID)
 bool Player::cooltimeChk(const double timeElapsed)
 {
 	m_cooltime += timeElapsed;
-	if (m_cooltime > 1)
+	if (m_cooltime > 3)
 	{
 		m_cooltime = 0;
 		return true;
@@ -68,29 +68,41 @@ bool Player::cooltimeChk(const double timeElapsed)
 	return false;
 }
 
-Projectile* Player::shoot()
+Projectile* Player::ShootArrow()
 {
-	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 10, Vector3D<float>{0, 0, 0});
+	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 2, Vector3D<float>{0, 0, 0});
 	a->setPosition(getPosition());
-	a->setDefaultColor(COLOR{ 0, 0, 1, 1 } );
 	a->setLifetime(5);
-	a->setLife(20);
+	a->setLife(10);
 	a->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-	a->setSpeed(300);
+	a->setSpeed(100);
+	a->setTeam(getTeam());
+	if(getTeam()==TEAM::RED)
+		a->setDefaultColor(COLOR{ 0.5f, 0.2f, 0.7f, 1 } );
+	else if(getTeam()==TEAM::BLUE)
+		a->setDefaultColor(COLOR{ 1, 1, 0, 1 }); 
 	return a;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Projectile* Building::ShootMissle()
+Projectile* Building::ShootBullet()
 {
-	Projectile* m = new Projectile(OBJTYPE::OBJ_BULLET, 10, Vector3D<float>{0, 0, 0});
-	m->setLifetime(5);
-	m->setLife(20);
-	m->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-	m->setSpeed(300);
-	m->setDefaultColor(COLOR{ 0,0,0,1 });
-	return m;
+	Projectile* b = new Projectile(OBJTYPE::OBJ_BULLET, 2, getPosition());
+	b->setLifetime(5);
+	b->setLife(20);
+	b->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
+	b->setSpeed(600);
+	b->setTeam(getTeam());
+	if (getTeam() == TEAM::RED) 
+	{
+		b->setDefaultColor(COLOR{ 1,0,0,1 });
+	}
+	else if (getTeam()==TEAM::BLUE)
+	{
+		b->setDefaultColor(COLOR{ 0,0,1,1 });
+	}
+	return b;
 }
 
 bool Building::cooltimeChk(const double timeElapsed)
@@ -99,7 +111,7 @@ bool Building::cooltimeChk(const double timeElapsed)
 	if (m_damagedtime > 0)
 		m_damagedtime -= timeElapsed;
 	
-	if (m_cooltime > 0.5)
+	if (m_cooltime > 10)
 	{
 		m_cooltime = 0;
 		return true;
@@ -116,8 +128,6 @@ void Building::render(Renderer* renderer, int texID)
 	if (m_damagedtime <= 0)
 		DrawTexturedRectByMatrix(m_Position, renderer, m_Size, m_Color, texID);
 		//DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
-	
-	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

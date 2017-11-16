@@ -26,6 +26,8 @@ protected:
 	double				m_Lifetime = 0.f;
 	double				m_damagedtime = 0.f;
 
+	int					m_Team;
+
 public:
 	Object() {};
 	Object(OBJTYPE type, int size, Vector3D<float> pos) : m_type(type), m_Position(pos), m_Size(size) {};
@@ -47,7 +49,7 @@ public:
 	void setID(int id) { m_id = id; }
 	void setLifetime(double lifetime) { m_Lifetime = lifetime; }
 	void setLife(double life) { m_Life = life; }
-	
+	void setTeam(int team) { m_Team = team; }
 	void decreaseLife(double dmg) { m_Life -= dmg; m_damagedtime = 0.1f; }
 
 	void move(const double timeElapsed) { m_Position += m_Direction * m_Speed * timeElapsed; };
@@ -55,13 +57,13 @@ public:
 	void setTarget(Object* target) { m_TargetBind = target; }
 	Object* getTarget() { return m_TargetBind; }
 	OBJTYPE getType() { return m_type; }
-
+	int getTeam() { return m_Team; }
 	double getLife() { return m_Life; }
 	double getLifetime() { return m_Lifetime; }
 	const int getID() { return m_id; }
 	void releaseTarget() { m_TargetBind = nullptr; }
 
-	bool wallchk(RECT b);
+	bool wallchk();
 	bool isIntersect(Object* target);
 
 	virtual void update(const double timeElapsed) = 0;
@@ -98,7 +100,7 @@ public:
 
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* renderer, int texID = NULL);
-	Projectile* shoot();
+	Projectile* ShootArrow();
 	bool cooltimeChk(const double timeElapsed);
 };
 
@@ -113,7 +115,7 @@ public:
 	Building(int size, Vector3D<float> pos) : Object(OBJTYPE::OBJ_BUILDING, size, pos) {}
 	~Building() {};
 
-	Projectile* ShootMissle();
+	Projectile* ShootBullet();
 	bool cooltimeChk(const double timeElapsed);
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* renderer, int texID = NULL);

@@ -49,8 +49,8 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
-	x = x - WINDOW_WIDTH_HALF;
-	y = -(y - WINDOW_HEIGHT_HALF);
+	x = x - WINDOW_WIDTH*0.5;
+	y = -(y - WINDOW_HEIGHT*0.5);
 
 	CurrentScene->mouseinput(button, state, x, y);
 	RenderScene();
@@ -58,8 +58,9 @@ void MouseInput(int button, int state, int x, int y)
 
 void MouseMove(int x, int y)
 {
-	x = x - WINDOW_WIDTH_HALF;
-	y = -(y - WINDOW_HEIGHT_HALF);
+	x = x - WINDOW_WIDTH*0.5;
+	y = -(y - WINDOW_HEIGHT*0.5);
+
 	CurrentScene->mouseinput(0, 0, x, y);
 	RenderScene();
 }
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Game Software Engineering KPU");
 
 

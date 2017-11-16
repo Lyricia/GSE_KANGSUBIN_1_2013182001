@@ -8,19 +8,19 @@ class Timer;
 class Scene
 {
 private:
-	Building*	m_Building[1];
+	Building*			m_Building[6];
 	list<Player*>		m_Player;
-	list<Projectile*>	m_Missle;
+	list<Projectile*>	m_Bullet;
 	list<Projectile*>	m_Arrow;
-
-	RECT		screenOOBB = { -250,250,250,-250 };
 
 	Renderer*	m_Renderer = nullptr;
 	Timer*		g_Timer = nullptr;
 
 	int			playerid = 0;
-	
-	int			tex1;
+	int			BuildingTex[2];
+
+	double		m_RedTeamCreateTimer = 0.f;
+	double		m_BlueTeamCreateTimer = 0.f;
 public:
 	Scene();
 	~Scene();
