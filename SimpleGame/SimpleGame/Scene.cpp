@@ -89,7 +89,7 @@ void Scene::mouseinput(int button, int state, int x, int y)
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
-		if (m_BlueTeamCreateTimer > 3) {
+		if (m_BlueTeamCreateTimer > 7) {
 			m_BlueTeamCreateTimer = 0.f;
 			Vector3D<float> pos = { x, y, 0 };
 			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 10, pos);
@@ -103,7 +103,7 @@ void Scene::mouseinput(int button, int state, int x, int y)
 			m_Player.push_back(p);
 		}
 		else
-			cout << "CoolTime : " << 3 - m_BlueTeamCreateTimer << endl;
+			cout << "CoolTime : " << 7 - m_BlueTeamCreateTimer << endl;
 	}
 }
 
