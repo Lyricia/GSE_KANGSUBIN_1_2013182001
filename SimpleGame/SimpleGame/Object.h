@@ -108,7 +108,6 @@ class Building : public Object
 {
 private:
 	double		m_cooltime = 0.f;
-	COLOR		hitColor = { 1,1,0,1 };
 
 public:
 	Building() {};
@@ -121,12 +120,17 @@ public:
 	virtual void render(Renderer* renderer, int texID = NULL);
 };
 
-inline void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color)
+inline void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, float level)
 {
-	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a);
+	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, level);
 }
 
-inline void DrawTexturedRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, GLuint texID)
+inline void DrawTexturedRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, GLuint texID, float level)
 {
-	Renderer->DrawTexturedRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, texID);
+	Renderer->DrawTexturedRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, texID, level);
+}
+
+inline void DrawSolidRectGaugeByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, float width, float height, COLOR color, float gauge, float level)
+{
+	Renderer->DrawSolidRectGauge(pos.x, pos.y + size, pos.z, width, height, color.r, color.g, color.b, color.a, gauge, level);
 }

@@ -10,12 +10,16 @@ void Object::releaseObject()
 bool Object::wallchk()
 {
 	if (m_Position.x > WINDOW_WIDTH / 2 || m_Position.x < -WINDOW_WIDTH / 2) {
-		setDirection(m_Direction.x *= -1, m_Direction.y, m_Direction.z);
+		m_Direction.x *= -1;
+		m_Position.x += m_Direction.x * 3;
+		return true;
 	}
 	if (m_Position.y > WINDOW_HEIGHT / 2 || m_Position.y < -WINDOW_HEIGHT / 2) {
-		setDirection(m_Direction.x, m_Direction.y *= -1, m_Direction.z);
+		m_Direction.y *= -1;
+		m_Position.y += m_Direction.y * 3;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 bool Object::isIntersect(Object* target)
@@ -26,13 +30,13 @@ bool Object::isIntersect(Object* target)
 	{
 		setTarget(target);
 		target->setTarget(this);
-		setColor(COLOR{ 1,0,1,1 });
+		//setColor(COLOR{ 1,1,1,1 });
 		return true;
 	}
 	else {
 		releaseTarget();
 		target->releaseTarget();
-		setColor(m_DefaultColor);
+		//setColor(m_DefaultColor);
 	}
 	return false;
 }
@@ -54,7 +58,16 @@ void Player::update(const double timeElapsed)
 
 void Player::render(Renderer* renderer, int texID)
 {
-	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
+	float gauge = m_Life / 100;
+	if (m_Team == TEAM::RED)
+	{
+		DrawSolidRectGaugeByMatrix(m_Position, renderer, 25, 40, 5, { 1,0,0,1 }, gauge, 0.1);
+	}
+	else if (m_Team == TEAM::BLUE)
+	{
+		DrawSolidRectGaugeByMatrix(m_Position, renderer, 25, 40, 5, { 0,0,1,1 }, gauge, 0.1);
+	}
+	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.2);
 }
 
 bool Player::cooltimeChk(const double timeElapsed)
@@ -70,7 +83,7 @@ bool Player::cooltimeChk(const double timeElapsed)
 
 Projectile* Player::ShootArrow()
 {
-	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 2, Vector3D<float>{0, 0, 0});
+	Projectile* a = new Projectile(OBJTYPE::OBJ_ARROW, 4, Vector3D<float>{0, 0, 0});
 	a->setPosition(getPosition());
 	a->setLifetime(5);
 	a->setLife(10);
@@ -88,7 +101,7 @@ Projectile* Player::ShootArrow()
 
 Projectile* Building::ShootBullet()
 {
-	Projectile* b = new Projectile(OBJTYPE::OBJ_BULLET, 2, getPosition());
+	Projectile* b = new Projectile(OBJTYPE::OBJ_BULLET, 4, getPosition());
 	b->setLifetime(5);
 	b->setLife(20);
 	b->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
@@ -125,8 +138,17 @@ void Building::update(const double timeElapsed)
 
 void Building::render(Renderer* renderer, int texID)
 {
+	float gauge = m_Life / 500;
+	if (m_Team == TEAM::RED)
+	{
+		DrawSolidRectGaugeByMatrix(m_Position, renderer, 60, 70, 8, { 1,0,0,1 }, gauge, 0.1);
+	}
+	else if (m_Team == TEAM::BLUE)
+	{
+		DrawSolidRectGaugeByMatrix(m_Position, renderer, 60, 70, 8, { 0,0,1,1 }, gauge, 0.1);
+	}
 	if (m_damagedtime <= 0)
-		DrawTexturedRectByMatrix(m_Position, renderer, m_Size, m_Color, texID);
+		DrawTexturedRectByMatrix(m_Position, renderer, m_Size, m_Color, texID, 0.1);
 		//DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
 }
 
@@ -140,5 +162,5 @@ void Projectile::update(const double timeElapsed)
 
 void Projectile::render(Renderer* renderer, int texID)
 {
-	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color);
+	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.3);
 }
