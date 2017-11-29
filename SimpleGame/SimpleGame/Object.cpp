@@ -67,7 +67,8 @@ void Player::render(Renderer* renderer, int texID)
 	{
 		DrawSolidRectGaugeByMatrix(m_Position, renderer, 25, 40, 5, { 0,0,1,1 }, gauge, 0.1);
 	}
-	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.2);
+	DrawTexturedRectByMatrix(m_Position, renderer, m_Size, COLOR({ 1, 1, 1, 1 }), texID, 0.1);
+	//DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.2);
 }
 
 bool Player::cooltimeChk(const double timeElapsed)

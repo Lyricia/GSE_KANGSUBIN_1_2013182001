@@ -40,6 +40,8 @@ void Scene::buildScene()
 	}
 	BuildingTex[0] = m_Renderer->CreatePngTexture("Assets/LOL.png");
 	BuildingTex[1] = m_Renderer->CreatePngTexture("Assets/HOS.png");
+	PlayerTex[0] = m_Renderer->CreatePngTexture("Assets/teemo.png");
+	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/lili.png");
 
 	// Init Unit Setting
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
@@ -275,9 +277,12 @@ void Scene::render()
 			m_Building[i]->render(m_Renderer, BuildingTex[1]);
 	}
 
-	for (auto p : m_Player)
-		p->render(m_Renderer);
-	
+	for (auto p : m_Player) {
+		if (p->getTeam() == TEAM::RED)
+			p->render(m_Renderer, PlayerTex[0]);
+		else if (p->getTeam() == TEAM::BLUE)
+			p->render(m_Renderer, PlayerTex[1]);
+	}
 	for (auto bullet : m_Bullet)
 		bullet->render(m_Renderer);
 	

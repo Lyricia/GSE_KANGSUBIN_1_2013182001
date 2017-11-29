@@ -18,6 +18,7 @@ private:
 
 	int			playerid = 0;
 	int			BuildingTex[2];
+	int			PlayerTex[2];
 
 	double		m_RedTeamCreateTimer = 0.f;
 	double		m_BlueTeamCreateTimer = 0.f;
