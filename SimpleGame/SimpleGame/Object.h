@@ -76,6 +76,7 @@ class Projectile : public Object
 {
 private:
 	int		m_Owner;
+	double	m_AnimationTime = 0.f;
 
 public:
 	Projectile() {};
@@ -91,13 +92,17 @@ public:
 class Player : public Object
 {
 private:
-	float	m_cooltime = 0;
+	double	m_cooltime = 0;
+	double	m_AnimationTime = 0.f;
+	int		m_AnimationSeqX, m_AnimationSeqY;
+	int		m_MaxSeqX, m_MaxSeqY, m_limitSeqX, m_limitSeqY;
 
 public:
 	Player() {};
 	Player(OBJTYPE type, int size, Vector3D<float> pos) :Object(type, size, pos) {};
 	~Player() {};
 
+	void SetSeq(int mx, int my, int lx, int ly);
 	virtual void update(const double timeElapsed);
 	virtual void render(Renderer* renderer, int texID = NULL);
 	Projectile* ShootArrow();
@@ -123,6 +128,11 @@ public:
 inline void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, float level)
 {
 	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, level);
+}
+
+inline void DrawTexturedSeqRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, int x, int y, int totalx, int totaly, GLuint texID, float level)
+{
+	Renderer->DrawTexturedRectSeq(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, texID, x, y, totalx, totaly, level);
 }
 
 inline void DrawTexturedRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, GLuint texID, float level)

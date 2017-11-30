@@ -40,14 +40,15 @@ void Scene::buildScene()
 	}
 	BuildingTex[0] = m_Renderer->CreatePngTexture("Assets/LOL.png");
 	BuildingTex[1] = m_Renderer->CreatePngTexture("Assets/HOS.png");
-	PlayerTex[0] = m_Renderer->CreatePngTexture("Assets/teemo.png");
-	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/lili.png");
+	PlayerTex[0] = m_Renderer->CreatePngTexture("Assets/spinning-scythe.png");
+	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/vampire-bat.png");
+	BackGroundTex = m_Renderer->CreatePngTexture("Assets/BackGround.png");
+	ParticleTex = m_Renderer->CreatePngTexture("Assets/effect.png");
 
 	// Init Unit Setting
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
 	dummy->setLife(-1);
 	m_Player.push_back(dummy);
-
 }
 
 void Scene::releaseScene()
@@ -102,6 +103,7 @@ void Scene::mouseinput(int button, int state, int x, int y)
 			p->setLife(100.f);
 			p->setID(playerid++);
 			p->setTeam(TEAM::BLUE);
+			p->SetSeq(7, 0, 10, 4);
 			m_Player.push_back(p);
 		}
 		else
@@ -260,12 +262,32 @@ void Scene::update()
 		p->setLife(100.f);
 		p->setID(playerid++);
 		p->setTeam(TEAM::RED);
+		p->SetSeq(3, 1, 4, 4);
 		m_Player.push_back(p);
+	}
+
+	m_AnimationTime += timeElapsed;
+	if (m_AnimationTime > 0.1)
+	{
+		m_AnimationTime = 0.f;
+		if (p1AnimationSeqX++ > 3)
+		{
+			p1AnimationSeqX = 0;
+			if (p1AnimationSeqY++ > 1)
+				p1AnimationSeqY = 0;
+		}
+
+		if (p2AnimationSeqX++ > 7)
+		{
+			p2AnimationSeqX = 0;
+		}
 	}
 }
 
 void Scene::render()
 {
+	m_Renderer->DrawTexturedRect(0, 0, 0, 800, 1,1,1,1,BackGroundTex, 0.9);
+
 	for (int i = 0; i < 3; ++i)
 	{
 		if (m_Building[i]->isAlive())
@@ -277,16 +299,19 @@ void Scene::render()
 			m_Building[i]->render(m_Renderer, BuildingTex[1]);
 	}
 
-	for (auto p : m_Player) {
-		if (p->getTeam() == TEAM::RED)
+	for (auto p : m_Player)
+	{
+		if (p->getTeam() == TEAM::RED) 
 			p->render(m_Renderer, PlayerTex[0]);
+
 		else if (p->getTeam() == TEAM::BLUE)
 			p->render(m_Renderer, PlayerTex[1]);
 	}
+
 	for (auto bullet : m_Bullet)
-		bullet->render(m_Renderer);
+		bullet->render(m_Renderer, ParticleTex);
 	
 	for (auto arrow : m_Arrow)
-		arrow->render(m_Renderer);
+		arrow->render(m_Renderer, ParticleTex);
 }
 

@@ -51,9 +51,30 @@ void Object::resetObject()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Player::SetSeq(int mx, int my, int lx, int ly)
+{
+	m_AnimationSeqX = 0;
+	m_AnimationSeqY = 0;
+	m_MaxSeqX = mx;
+	m_MaxSeqY = my;
+	m_limitSeqX = lx;
+	m_limitSeqY = ly;
+}
+
 void Player::update(const double timeElapsed)
 {
 	move(timeElapsed);
+	m_AnimationTime += timeElapsed;
+	if (m_AnimationTime > 0.1) {
+		m_AnimationTime = 0;
+		if (m_AnimationSeqX++ > m_MaxSeqX)
+		{
+			m_AnimationSeqX = 0;
+			if (m_AnimationSeqY++ > m_MaxSeqY)
+				m_AnimationSeqY = 0;
+		}
+	}
 }
 
 void Player::render(Renderer* renderer, int texID)
@@ -67,7 +88,8 @@ void Player::render(Renderer* renderer, int texID)
 	{
 		DrawSolidRectGaugeByMatrix(m_Position, renderer, 25, 40, 5, { 0,0,1,1 }, gauge, 0.1);
 	}
-	DrawTexturedRectByMatrix(m_Position, renderer, m_Size, COLOR({ 1, 1, 1, 1 }), texID, 0.1);
+	DrawTexturedSeqRectByMatrix(m_Position, renderer, 40, { 1,1,1 }, m_AnimationSeqX, m_AnimationSeqY, m_limitSeqX, m_limitSeqY, texID, 0.1);
+	//DrawTexturedRectByMatrix(m_Position, renderer, m_Size, COLOR({ 1, 1, 1, 1 }), texID, 0.1);
 	//DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.2);
 }
 
@@ -159,9 +181,11 @@ void Building::render(Renderer* renderer, int texID)
 void Projectile::update(const double timeElapsed)
 {
 	move(timeElapsed);
+	m_AnimationTime += timeElapsed;
 }
 
 void Projectile::render(Renderer* renderer, int texID)
 {
+	renderer->DrawParticle(m_Position.x, m_Position.y, m_Position.z, 10, 1, 1, 1, 1, -m_Direction.x*3, -m_Direction.y*3, texID, m_AnimationTime);
 	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.3);
 }
