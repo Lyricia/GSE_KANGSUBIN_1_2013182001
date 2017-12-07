@@ -49,6 +49,8 @@ void Scene::buildScene()
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
 	dummy->setLife(-1);
 	m_Player.push_back(dummy);
+
+	GameStatus = STATUS::RUNNING;
 }
 
 void Scene::releaseScene()
@@ -90,7 +92,7 @@ void Scene::keyspcialinput(int key)
 void Scene::mouseinput(int button, int state, int x, int y)
 {
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && STATUS::RUNNING)
 	{
 		if (m_BlueTeamCreateTimer > 0) {
 			m_BlueTeamCreateTimer = 0.f;
@@ -106,187 +108,214 @@ void Scene::mouseinput(int button, int state, int x, int y)
 			p->SetSeq(7, 0, 10, 4);
 			m_Player.push_back(p);
 		}
-		else
-			cout << "CoolTime : " << 7 - m_BlueTeamCreateTimer << endl;
 	}
 }
 
 void Scene::update()
 {
-	g_Timer->getTimeset();
-	double timeElapsed = g_Timer->getTimeElapsed();
+	if (GameStatus == STATUS::RUNNING) {
+		int reddeadcount = 0;
+		int bluedeadcount = 0;
 
-	for (auto p : m_Player)
-	{
-		if (p->isAlive())
-		{
-			p->update(timeElapsed);
-			p->wallchk();
-		}
-	}
+		g_Timer->getTimeset();
+		double timeElapsed = g_Timer->getTimeElapsed();
 
-	for (auto a : m_Arrow)
-	{
-		if (a->isAlive())
+		for (auto p : m_Player)
 		{
-			a->update(timeElapsed);
-			if (a->wallchk()) {
-				m_Arrow.remove(a);
-				break;
-			}
-		}
-	}
-
-	for (auto b : m_Bullet)
-	{
-		if (b->isAlive())
-		{
-			b->update(timeElapsed);
-			if (b->wallchk()) {
-				m_Bullet.remove(b);
-				break;
-			}
-		}
-	}
-
-	for (int i = 0; i < 6; ++i)
-	{
-		if (m_Building[i]->isAlive())
-		{
-			if (m_Building[i]->cooltimeChk(timeElapsed))
+			if (p->isAlive())
 			{
-				Projectile* m = m_Building[i]->ShootBullet();
-				m_Bullet.push_back(m);
+				p->update(timeElapsed);
+				p->wallchk();
 			}
 		}
-		else
+
+		for (auto a : m_Arrow)
 		{
-			m_Building[i]->setPosition(Vector3D<float>(-500, -1000, 0));
+			if (a->isAlive())
+			{
+				a->update(timeElapsed);
+				if (a->wallchk()) {
+					m_Arrow.remove(a);
+					break;
+				}
+			}
 		}
 
 		for (auto b : m_Bullet)
 		{
-			if (b->getTeam() != m_Building[i]->getTeam())
+			if (b->isAlive())
 			{
-				if (m_Building[i]->isIntersect(b))
-				{
-					m_Building[i]->decreaseLife(b->getLife());
+				b->update(timeElapsed);
+				if (b->wallchk()) {
 					m_Bullet.remove(b);
 					break;
 				}
 			}
 		}
 
-		for (auto arrow : m_Arrow)
+		for (int i = 0; i < 6; ++i)
 		{
-			if (arrow->getTeam() != m_Building[i]->getTeam())
+			if (m_Building[i]->isAlive())
 			{
-				if (arrow->isIntersect(m_Building[i]))
+				if (m_Building[i]->cooltimeChk(timeElapsed))
 				{
-					m_Building[i]->decreaseLife(arrow->getLife());
-					m_Arrow.remove(arrow);
-					break;
+					Projectile* m = m_Building[i]->ShootBullet();
+					m_Bullet.push_back(m);
 				}
 			}
-		}
-	}
-	
-	for (auto it = m_Player.begin(); it !=m_Player.end();)
-	{
-		Player* p = *it++;
- 		if (p->isAlive())
-		{
-			for (int i = 0; i < 6; ++i)
+			else
 			{
-				if (m_Building[i]->getTeam() != p->getTeam()) 
+				m_Building[i]->setPosition(Vector3D<float>(-500, -1000, 0));
+				if (i < 3)	reddeadcount++;
+				else		bluedeadcount++;
+
+				if (reddeadcount == 3)
+					GameStatus = STATUS::BLUEWIN;
+				else if(bluedeadcount == 3)
+					GameStatus = STATUS::REDWIN;
+					
+			}
+
+			for (auto b : m_Bullet)
+			{
+				if (b->getTeam() != m_Building[i]->getTeam())
 				{
-					if (m_Building[i]->isAlive() && m_Building[i]->isIntersect(p))
+					if (m_Building[i]->isIntersect(b))
 					{
-						m_Building[i]->decreaseLife(p->getLife());
-						m_Player.remove(p);
-						continue;
-					}
-				}
-			}
-		}
-		for (auto a : m_Arrow)
-		{
-			if (a->getTeam() != p->getTeam())
-			{
-				if (p->isIntersect(a))
-				{
-					p->decreaseLife(a->getLife());
-					if (!p->isAlive()) {
-						m_Player.remove(p);
-						m_Arrow.remove(a);
-						break;
-					}
-				}
-			}
-		}
-		for (auto b : m_Bullet)
-		{
-			if (b->getTeam() != p->getTeam())
-			{
-				if (p->isIntersect(b))
-				{
-					p->decreaseLife(b->getLife());
-					if (!p->isAlive())
-					{
-						m_Player.remove(p);
+						m_ShakeTime = 3.f;
+						m_ShakeStrength = 10;
+						m_Building[i]->decreaseLife(b->getLife());
 						m_Bullet.remove(b);
 						break;
 					}
 				}
 			}
-		}
-		if (p->cooltimeChk(timeElapsed) && p->isAlive())
-		{
-			Projectile* a = p->ShootArrow();
-			a->setOwner(p->getID());
-			m_Arrow.push_back(a);
-		}
-	}
 
-	m_RedTeamCreateTimer += timeElapsed;
-	m_BlueTeamCreateTimer += timeElapsed;
-	if (m_RedTeamCreateTimer > 2)
-	{
-		m_RedTeamCreateTimer = 0.f;
-		Vector3D<float> pos = { -220 + rand() % 440, 250 - rand() % 200 , 0 };
-		Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 30, pos);
-		p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-		p->setSpeed(300);
-		p->setDefaultColor(COLOR{ 1,0,0,1 });
-		p->setLifetime(10.f);
-		p->setLife(100.f);
-		p->setID(playerid++);
-		p->setTeam(TEAM::RED);
-		p->SetSeq(3, 1, 4, 4);
-		m_Player.push_back(p);
-	}
-
-	m_AnimationTime += timeElapsed;
-	if (m_AnimationTime > 0.1)
-	{
-		m_AnimationTime = 0.f;
-		if (p1AnimationSeqX++ > 3)
-		{
-			p1AnimationSeqX = 0;
-			if (p1AnimationSeqY++ > 1)
-				p1AnimationSeqY = 0;
+			for (auto arrow : m_Arrow)
+			{
+				if (arrow->getTeam() != m_Building[i]->getTeam())
+				{
+					if (arrow->isIntersect(m_Building[i]))
+					{
+						m_ShakeTime = 3.f;
+						m_ShakeStrength = 10;
+						m_Building[i]->decreaseLife(arrow->getLife());
+						m_Arrow.remove(arrow);
+						break;
+					}
+				}
+			}
 		}
 
-		if (p2AnimationSeqX++ > 7)
+		for (auto it = m_Player.begin(); it != m_Player.end();)
 		{
-			p2AnimationSeqX = 0;
+			Player* p = *it++;
+			if (p->isAlive())
+			{
+				for (int i = 0; i < 6; ++i)
+				{
+					if (m_Building[i]->getTeam() != p->getTeam())
+					{
+						if (m_Building[i]->isAlive() && m_Building[i]->isIntersect(p))
+						{
+							m_ShakeTime = 4.f;
+							m_ShakeStrength = 20;
+							m_Building[i]->decreaseLife(p->getLife());
+							m_Player.remove(p);
+							continue;
+						}
+					}
+				}
+			}
+			for (auto a : m_Arrow)
+			{
+				if (a->getTeam() != p->getTeam())
+				{
+					if (p->isIntersect(a))
+					{
+						p->decreaseLife(a->getLife());
+						if (!p->isAlive()) {
+							m_Player.remove(p);
+							m_Arrow.remove(a);
+							break;
+						}
+					}
+				}
+			}
+			for (auto b : m_Bullet)
+			{
+				if (b->getTeam() != p->getTeam())
+				{
+					if (p->isIntersect(b))
+					{
+						p->decreaseLife(b->getLife());
+						if (!p->isAlive())
+						{
+							m_Player.remove(p);
+							m_Bullet.remove(b);
+							break;
+						}
+					}
+				}
+			}
+			if (p->cooltimeChk(timeElapsed) && p->isAlive())
+			{
+				Projectile* a = p->ShootArrow();
+				a->setOwner(p->getID());
+				m_Arrow.push_back(a);
+			}
+		}
+
+		m_RedTeamCreateTimer += timeElapsed;
+		m_BlueTeamCreateTimer += timeElapsed;
+		if (m_RedTeamCreateTimer > 2)
+		{
+			m_RedTeamCreateTimer = 0.f;
+			Vector3D<float> pos = { -220 + rand() % 440, 250 - rand() % 200 , 0 };
+			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 30, pos);
+			p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
+			p->setSpeed(300);
+			p->setDefaultColor(COLOR{ 1,0,0,1 });
+			p->setLifetime(10.f);
+			p->setLife(100.f);
+			p->setID(playerid++);
+			p->setTeam(TEAM::RED);
+			p->SetSeq(3, 1, 4, 4);
+			m_Player.push_back(p);
+		}
+
+		m_AnimationTime += timeElapsed;
+		if (m_AnimationTime > 0.1)
+		{
+			m_AnimationTime = 0.f;
+			if (p1AnimationSeqX++ > 3)
+			{
+				p1AnimationSeqX = 0;
+				if (p1AnimationSeqY++ > 1)
+					p1AnimationSeqY = 0;
+			}
+
+			if (p2AnimationSeqX++ > 7)
+			{
+				p2AnimationSeqX = 0;
+			}
+		}
+
+		if (m_ShakeTime > 0) {
+			m_ShakeTime -= timeElapsed * 10;
+			m_ShakeStrength -= timeElapsed * 10;
+			m_Renderer->SetSceneTransform(cos(m_ShakeTime * 10) * m_ShakeStrength, cos(m_ShakeTime * 25) * m_ShakeStrength, 1, 1);
+		}
+		else
+		{
+			m_Renderer->SetSceneTransform(0, 0, 1, 1);
 		}
 	}
 }
 
 void Scene::render()
 {
-	m_Renderer->DrawTexturedRect(0, 0, 0, 800, 1,1,1,1,BackGroundTex, 0.9);
+	 m_Renderer->DrawTexturedRect(0, 0, 0, 820, 1, 1, 1, 1, BackGroundTex, 0.9);
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -313,5 +342,10 @@ void Scene::render()
 	
 	for (auto arrow : m_Arrow)
 		arrow->render(m_Renderer, ParticleTex);
+	
+	if (GameStatus == STATUS::BLUEWIN)
+		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "BLUEWIN");
+	else if(GameStatus == STATUS::REDWIN)
+		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "REDWIN");
 }
 

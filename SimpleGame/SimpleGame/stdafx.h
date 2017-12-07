@@ -30,3 +30,14 @@ enum OBJTYPE {
 };
 
 enum TEAM { BLUE, RED };
+
+enum STATUS {
+	STOP
+	, RUNNING
+	, PAUSE
+	, REDWIN
+	, BLUEWIN	
+};
+
+
+

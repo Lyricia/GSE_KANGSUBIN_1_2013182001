@@ -25,8 +25,14 @@ private:
 	double		m_RedTeamCreateTimer = 0.f;
 	double		m_BlueTeamCreateTimer = 0.f;
 	double		m_AnimationTime = 0.f;
+	double		m_ShakeTime = 0.f;
+	int			m_ShakeStrength = 0;
+
 	int			p1AnimationSeqX = 0, p1AnimationSeqY = 0;
 	int			p2AnimationSeqX = 0, p2AnimationSeqY = 0;
+
+	STATUS		GameStatus = STATUS::STOP;
+
 public:
 	Scene();
 	~Scene();
