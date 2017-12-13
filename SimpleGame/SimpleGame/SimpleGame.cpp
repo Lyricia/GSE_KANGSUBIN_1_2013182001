@@ -67,7 +67,21 @@ void MouseMove(int x, int y)
 
 void KeyInput(unsigned char key, int x, int y)
 {
-	CurrentScene->keyinput(key);
+	switch (key)
+	{
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+
+	case 'r':
+		CurrentScene->releaseScene();
+		Initialize();
+		break;
+
+	default:
+		CurrentScene->keyinput(key);
+		break;
+	}
 	RenderScene();
 }
 

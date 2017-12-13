@@ -4,6 +4,7 @@
 #define MAX_OBJECT 100
 
 class Timer;
+class Sound;
 
 class Scene
 {
@@ -31,7 +32,10 @@ private:
 	int			p1AnimationSeqX = 0, p1AnimationSeqY = 0;
 	int			p2AnimationSeqX = 0, p2AnimationSeqY = 0;
 
-	STATUS		GameStatus = STATUS::STOP;
+	GAMESTATUS	GameStatus = GAMESTATUS::STOP;
+
+	Sound		*m_Sound;
+	int			m_SoundIdx[10] = {};
 
 public:
 	Scene();

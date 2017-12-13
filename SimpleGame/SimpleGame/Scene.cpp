@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "Timer.h"
+#include "Sound.h"
 #include "Scene.h"
 
 using namespace std;
@@ -38,24 +39,44 @@ void Scene::buildScene()
 		m_Building[i]->setDefaultColor(COLOR{ 1,1,1,1 });
 		m_Building[i]->setTeam(TEAM::BLUE);
 	}
-	BuildingTex[0] = m_Renderer->CreatePngTexture("Assets/LOL.png");
-	BuildingTex[1] = m_Renderer->CreatePngTexture("Assets/HOS.png");
-	PlayerTex[0] = m_Renderer->CreatePngTexture("Assets/spinning-scythe.png");
-	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/vampire-bat.png");
-	BackGroundTex = m_Renderer->CreatePngTexture("Assets/BackGround.png");
-	ParticleTex = m_Renderer->CreatePngTexture("Assets/effect.png");
+
+	BuildingTex[0] = m_Renderer->CreatePngTexture("Assets/Image/LOL.png");
+	BuildingTex[1] = m_Renderer->CreatePngTexture("Assets/Image/HOS.png");
+	PlayerTex[0] = m_Renderer->CreatePngTexture("Assets/Image/spinning-scythe.png");
+	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/Image/vampire-bat.png");
+	BackGroundTex = m_Renderer->CreatePngTexture("Assets/Image/BackGround.png");
+	ParticleTex = m_Renderer->CreatePngTexture("Assets/Image/effect.png");
 
 	// Init Unit Setting
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
 	dummy->setLife(-1);
 	m_Player.push_back(dummy);
 
-	GameStatus = STATUS::RUNNING;
+	GameStatus = GAMESTATUS::RUNNING;
+
+	m_Sound = new Sound();
+	m_SoundIdx[SOUNDINDEX::BGM] = m_Sound->CreateSound("./Assets/Sound/Cheetahmen.mp3");
+	m_SoundIdx[SOUNDINDEX::WIN] = m_Sound->CreateSound("./Assets/Sound/WinSound.wav");
+	m_SoundIdx[SOUNDINDEX::LOSE] = m_Sound->CreateSound("./Assets/Sound/LoseSound.wav");
+	m_SoundIdx[SOUNDINDEX::CRASHEFFECT] = m_Sound->CreateSound("./Assets/Sound/CrashEffect.mp3");
+	m_SoundIdx[SOUNDINDEX::PAUSESOUND] = m_Sound->CreateSound("./Assets/Sound/PauseSound.wav");
+	m_Sound->PlaySound(m_SoundIdx[0], true, 0.5f);
 }
 
 void Scene::releaseScene()
 {
-	delete[] m_Building;
+	if (m_Sound) {
+		for (int i = 0; i < 5; ++i)
+			m_Sound->DeleteSound(i);
+	}
+	
+	m_Player.clear();
+	m_Bullet.clear();
+	m_Arrow.clear();
+	
+	delete		m_Renderer;
+	delete		g_Timer;
+	delete[]	m_Building;
 }
 
 
@@ -63,14 +84,15 @@ void Scene::keyinput(unsigned char key)
 {
 	switch (key)
 	{
-	case 'q':
-		glutLeaveMainLoop();
-		break;
-		
-	case 'a':
-		m_Building[0]->setLife(-10);
-		break;
+	case 'p':
+	case 'P':
+		m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::PAUSESOUND], false, 0.5f);
 
+		if (GameStatus == GAMESTATUS::RUNNING) 
+			GameStatus = GAMESTATUS::PAUSE;
+		else if (GameStatus == GAMESTATUS::PAUSE) 
+			GameStatus = GAMESTATUS::RUNNING;
+		break;
 
 	default:
 		break;
@@ -92,9 +114,9 @@ void Scene::keyspcialinput(int key)
 void Scene::mouseinput(int button, int state, int x, int y)
 {
 	//m_Player->setPosition(Vector3D<float>{x, y, 0});
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && STATUS::RUNNING)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && GAMESTATUS::RUNNING)
 	{
-		if (m_BlueTeamCreateTimer > 0) {
+		if (m_BlueTeamCreateTimer > 0 && GameStatus == GAMESTATUS::RUNNING) {
 			m_BlueTeamCreateTimer = 0.f;
 			Vector3D<float> pos = { x, y, 0 };
 			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 30, pos);
@@ -113,7 +135,7 @@ void Scene::mouseinput(int button, int state, int x, int y)
 
 void Scene::update()
 {
-	if (GameStatus == STATUS::RUNNING) {
+	if (GameStatus == GAMESTATUS::RUNNING) {
 		int reddeadcount = 0;
 		int bluedeadcount = 0;
 
@@ -170,10 +192,15 @@ void Scene::update()
 				else		bluedeadcount++;
 
 				if (reddeadcount == 3)
-					GameStatus = STATUS::BLUEWIN;
-				else if(bluedeadcount == 3)
-					GameStatus = STATUS::REDWIN;
-					
+				{
+					GameStatus = GAMESTATUS::BLUEWIN;
+					m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::WIN], false, 0.5f);
+				}
+				else if (bluedeadcount == 3)
+				{
+					GameStatus = GAMESTATUS::REDWIN;
+					m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::LOSE], false, 0.5f);
+				}
 			}
 
 			for (auto b : m_Bullet)
@@ -186,6 +213,8 @@ void Scene::update()
 						m_ShakeStrength = 10;
 						m_Building[i]->decreaseLife(b->getLife());
 						m_Bullet.remove(b);
+						
+						m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.3f);
 						break;
 					}
 				}
@@ -201,6 +230,8 @@ void Scene::update()
 						m_ShakeStrength = 10;
 						m_Building[i]->decreaseLife(arrow->getLife());
 						m_Arrow.remove(arrow);
+						
+						m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.3f);
 						break;
 					}
 				}
@@ -222,6 +253,8 @@ void Scene::update()
 							m_ShakeStrength = 20;
 							m_Building[i]->decreaseLife(p->getLife());
 							m_Player.remove(p);
+
+							m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.5f);
 							continue;
 						}
 					}
@@ -311,6 +344,11 @@ void Scene::update()
 			m_Renderer->SetSceneTransform(0, 0, 1, 1);
 		}
 	}
+	else if (GameStatus == GAMESTATUS::PAUSE)
+	{
+		g_Timer->getTimeset();
+		double timeElapsed = g_Timer->getTimeElapsed();
+	}
 }
 
 void Scene::render()
@@ -343,9 +381,9 @@ void Scene::render()
 	for (auto arrow : m_Arrow)
 		arrow->render(m_Renderer, ParticleTex);
 	
-	if (GameStatus == STATUS::BLUEWIN)
-		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "BLUEWIN");
-	else if(GameStatus == STATUS::REDWIN)
-		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "REDWIN");
+	if (GameStatus == GAMESTATUS::BLUEWIN)
+		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, 1, 0, 1, "BLUEWIN");
+	else if(GameStatus == GAMESTATUS::REDWIN)
+		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, 1, 0, 1, "REDWIN");
 }
 

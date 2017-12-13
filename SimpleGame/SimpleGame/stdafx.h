@@ -31,7 +31,7 @@ enum OBJTYPE {
 
 enum TEAM { BLUE, RED };
 
-enum STATUS {
+enum GAMESTATUS {
 	STOP
 	, RUNNING
 	, PAUSE
@@ -39,5 +39,11 @@ enum STATUS {
 	, BLUEWIN	
 };
 
-
+enum SOUNDINDEX {
+	BGM = 0,
+	PAUSESOUND,
+	WIN,
+	LOSE,
+	CRASHEFFECT
+};
 
