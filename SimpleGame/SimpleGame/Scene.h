@@ -22,11 +22,13 @@ private:
 	int			PlayerTex[2];
 	int			BackGroundTex;
 	int			ParticleTex;
+	int			SnowParticle;
 
 	double		m_RedTeamCreateTimer = 0.f;
 	double		m_BlueTeamCreateTimer = 0.f;
 	double		m_AnimationTime = 0.f;
 	double		m_ShakeTime = 0.f;
+	double		m_ClimateTime = 0.f;
 	int			m_ShakeStrength = 0;
 
 	int			p1AnimationSeqX = 0, p1AnimationSeqY = 0;

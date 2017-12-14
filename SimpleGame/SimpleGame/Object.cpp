@@ -128,7 +128,7 @@ Projectile* Building::ShootBullet()
 	b->setLifetime(5);
 	b->setLife(20);
 	b->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-	b->setSpeed(600);
+	b->setSpeed(50);
 	b->setTeam(getTeam());
 	if (getTeam() == TEAM::RED) 
 	{
@@ -147,7 +147,7 @@ bool Building::cooltimeChk(const double timeElapsed)
 	if (m_damagedtime > 0)
 		m_damagedtime -= timeElapsed;
 	
-	if (m_cooltime > 10)
+	if (m_cooltime > 5)
 	{
 		m_cooltime = 0;
 		return true;
@@ -186,6 +186,6 @@ void Projectile::update(const double timeElapsed)
 
 void Projectile::render(Renderer* renderer, int texID)
 {
-	renderer->DrawParticle(m_Position.x, m_Position.y, m_Position.z, 10, 1, 1, 1, 1, -m_Direction.x*3, -m_Direction.y*3, texID, m_AnimationTime);
+	renderer->DrawParticle(m_Position.x, m_Position.y, m_Position.z, 10, 1, 1, 1, 1, -m_Direction.x, -m_Direction.y, texID, m_AnimationTime,0.2);
 	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.3);
 }

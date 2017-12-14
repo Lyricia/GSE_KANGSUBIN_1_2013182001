@@ -15,7 +15,8 @@ public:
 	int CreateSound(char* filePath);
 	void DeleteSound(int index);
 	void PlaySound(int index, bool bLoop, float volume);
-		
+	void StopAllSound();
+	void PauseAllSound(bool isPaused);
 
 private:
 	ISoundEngine* m_engine = NULL;

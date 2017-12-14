@@ -46,6 +46,7 @@ void Scene::buildScene()
 	PlayerTex[1] = m_Renderer->CreatePngTexture("Assets/Image/vampire-bat.png");
 	BackGroundTex = m_Renderer->CreatePngTexture("Assets/Image/BackGround.png");
 	ParticleTex = m_Renderer->CreatePngTexture("Assets/Image/effect.png");
+	SnowParticle = m_Renderer->CreatePngTexture("Assets/Image/SnowParticle.png");
 
 	// Init Unit Setting
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
@@ -55,16 +56,17 @@ void Scene::buildScene()
 	GameStatus = GAMESTATUS::RUNNING;
 
 	m_Sound = new Sound();
-	m_SoundIdx[SOUNDINDEX::BGM] = m_Sound->CreateSound("./Assets/Sound/Cheetahmen.mp3");
-	m_SoundIdx[SOUNDINDEX::WIN] = m_Sound->CreateSound("./Assets/Sound/WinSound.wav");
-	m_SoundIdx[SOUNDINDEX::LOSE] = m_Sound->CreateSound("./Assets/Sound/LoseSound.wav");
-	m_SoundIdx[SOUNDINDEX::CRASHEFFECT] = m_Sound->CreateSound("./Assets/Sound/CrashEffect.mp3");
-	m_SoundIdx[SOUNDINDEX::PAUSESOUND] = m_Sound->CreateSound("./Assets/Sound/PauseSound.wav");
+	m_SoundIdx[SOUNDINDEX::BGM] = m_Sound->CreateSound("Assets/Sound/Cheetahmen.mp3");
+	m_SoundIdx[SOUNDINDEX::WIN] = m_Sound->CreateSound("Assets/Sound/WinSound.wav");
+	m_SoundIdx[SOUNDINDEX::LOSE] = m_Sound->CreateSound("Assets/Sound/LoseSound.wav");
+	m_SoundIdx[SOUNDINDEX::CRASHEFFECT] = m_Sound->CreateSound("Assets/Sound/CrashEffect.mp3");
+	m_SoundIdx[SOUNDINDEX::PAUSESOUND] = m_Sound->CreateSound("Assets/Sound/PauseSound.wav");
 	m_Sound->PlaySound(m_SoundIdx[0], true, 0.5f);
 }
 
 void Scene::releaseScene()
 {
+	m_Sound->StopAllSound();
 	if (m_Sound) {
 		for (int i = 0; i < 5; ++i)
 			m_Sound->DeleteSound(i);
@@ -73,7 +75,7 @@ void Scene::releaseScene()
 	m_Player.clear();
 	m_Bullet.clear();
 	m_Arrow.clear();
-	
+
 	delete		m_Renderer;
 	delete		g_Timer;
 	delete[]	m_Building;
@@ -86,12 +88,18 @@ void Scene::keyinput(unsigned char key)
 	{
 	case 'p':
 	case 'P':
-		m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::PAUSESOUND], false, 0.5f);
 
-		if (GameStatus == GAMESTATUS::RUNNING) 
+		if (GameStatus == GAMESTATUS::RUNNING)
+		{
+			m_Sound->PauseAllSound(true);
 			GameStatus = GAMESTATUS::PAUSE;
-		else if (GameStatus == GAMESTATUS::PAUSE) 
+		}
+		else if (GameStatus == GAMESTATUS::PAUSE)
+		{
+			m_Sound->PauseAllSound(false);
 			GameStatus = GAMESTATUS::RUNNING;
+		}
+		m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::PAUSESOUND], false, 0.5f);
 		break;
 
 	default:
@@ -194,11 +202,13 @@ void Scene::update()
 				if (reddeadcount == 3)
 				{
 					GameStatus = GAMESTATUS::BLUEWIN;
+					m_Sound->StopAllSound();
 					m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::WIN], false, 0.5f);
 				}
 				else if (bluedeadcount == 3)
 				{
 					GameStatus = GAMESTATUS::REDWIN;
+					m_Sound->StopAllSound();
 					m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::LOSE], false, 0.5f);
 				}
 			}
@@ -318,6 +328,7 @@ void Scene::update()
 		}
 
 		m_AnimationTime += timeElapsed;
+		m_ClimateTime += timeElapsed;
 		if (m_AnimationTime > 0.1)
 		{
 			m_AnimationTime = 0.f;
@@ -353,7 +364,8 @@ void Scene::update()
 
 void Scene::render()
 {
-	 m_Renderer->DrawTexturedRect(0, 0, 0, 820, 1, 1, 1, 1, BackGroundTex, 0.9);
+	m_Renderer->DrawTexturedRect(0, 0, 0, 820, 0.5f, 0.5f, 0.5f, 1.0f, BackGroundTex, 0.9);
+	m_Renderer->DrawParticleClimate(0, 0, 0, 1, 1, 1, 1, 1, -0.5, -0.5, SnowParticle, m_ClimateTime, 0.01);
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -382,8 +394,10 @@ void Scene::render()
 		arrow->render(m_Renderer, ParticleTex);
 	
 	if (GameStatus == GAMESTATUS::BLUEWIN)
-		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, 1, 0, 1, "BLUEWIN");
+		m_Renderer->DrawTextW(-10, 300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You Win!");
 	else if(GameStatus == GAMESTATUS::REDWIN)
-		m_Renderer->DrawTextW(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, 1, 0, 1, "REDWIN");
+		m_Renderer->DrawTextW(-10, -300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You LOSE!");
+	else if(GameStatus == GAMESTATUS::PAUSE)
+		m_Renderer->DrawTextW(-10, 100, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "PAUSE");
 }
 

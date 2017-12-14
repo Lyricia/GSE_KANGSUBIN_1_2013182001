@@ -31,7 +31,7 @@ protected:
 public:
 	Object() {};
 	Object(OBJTYPE type, int size, Vector3D<float> pos) : m_type(type), m_Position(pos), m_Size(size) {};
-	~Object() {};
+	~Object() { delete m_TargetBind; };
 	void releaseObject();
 
 	Vector3D<float>	getPosition() { return m_Position; }
