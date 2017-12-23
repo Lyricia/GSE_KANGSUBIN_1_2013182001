@@ -128,7 +128,7 @@ Projectile* Building::ShootBullet()
 	b->setLifetime(5);
 	b->setLife(20);
 	b->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-	b->setSpeed(150);
+	b->setSpeed(350);
 	b->setTeam(getTeam());
 	if (getTeam() == TEAM::RED) 
 	{
@@ -211,7 +211,7 @@ void Sprite::SetSeq(int mx, int my, int lx, int ly)
 bool Sprite::AddSeq(const double timeElapsed)
 {
 	m_AnimationTime += timeElapsed;
-	if (m_AnimationTime > 0.5) {
+	if (m_AnimationTime > 0.1) {
 		m_AnimationTime = 0;
 		m_AnimationSeqX++;
 		if (m_AnimationSeqX > m_MaxSeqX)

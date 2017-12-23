@@ -122,7 +122,7 @@ void Scene::keyspcialinput(int key)
 // 밖에서 누르고 안에서 업 할 수도 있기 때문에
 void Scene::mouseinput(int button, int state, int x, int y)
 {
-	if (y < 0) 
+	//if (y < 0) 
 	{
 		if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && GAMESTATUS::RUNNING)
 		{
@@ -152,7 +152,7 @@ void Scene::update()
 		int bluedeadcount = 0;
 
 		g_Timer->getTimeset();
-		double timeElapsed = g_Timer->getTimeElapsed()*0.5;
+		double timeElapsed = g_Timer->getTimeElapsed();
 
 		for (auto p : m_Player)
 		{
@@ -191,7 +191,6 @@ void Scene::update()
 		{
 			if (!m_Building[i]->isAlive())
 			{
-
 				m_Building[i]->setPosition(Vector3D<float>(-500, -1000, 0));
 				if (i < 3)	reddeadcount++;
 				else		bluedeadcount++;
@@ -262,7 +261,7 @@ void Scene::update()
 						if (m_Building[i]->getTeam() != p->getTeam())
 						{
 							Vector3D<float> dir = p->getPosition() - m_Building[i]->getPosition();
-							if (dir.Length() < 300)
+							if (dir.Length() < 200)
 							{
 								Projectile* m = m_Building[i]->ShootBullet();
 								m->setDirection(dir.Normalize());
@@ -301,6 +300,11 @@ void Scene::update()
 							m_Arrow.remove(a);
 							break;
 						}
+					}
+					Vector3D<float> dir = p->getPosition() - a->getPosition();
+					if (dir.Length() < 100)
+					{
+						a->setDirection(dir.Normalize());
 					}
 				}
 			}
@@ -445,9 +449,10 @@ void Scene::render()
 
 	else if (GameStatus == GAMESTATUS::STOP)
 	{
-		float t = (sin(m_ColorTime / 3) + 1) / 2;
-		float t2 = (cos(m_ColorTime / 5) + 1) / 2;
+		float t = (sin(m_ColorTime * 5) + 1) / 2;
+		float t2 = (cos(m_ColorTime * 3) + 1) / 2;
+		float t3 = (cos(m_ColorTime * 2) + 1) / 2;
 		m_Renderer->DrawTexturedRect(0, 0, 0, 512, 1.f, 1.f, 1.f, 1.f, StartScene[0], 0.5);
-		m_Renderer->DrawTexturedRect(0, 0, 0, 512, t, 1 - t2, t2, (sin(m_ColorTime / 2) + 1) / 2, StartScene[1], 0.5);
+		m_Renderer->DrawTexturedRect(0, 0, 0, 512, t, t3, t2, (sin(m_ColorTime * 2) + 1) / 2, StartScene[1], 0.5);
 	}
 }

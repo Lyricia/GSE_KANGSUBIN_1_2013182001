@@ -61,6 +61,7 @@ public:
 	double getLife() { return m_Life; }
 	double getLifetime() { return m_Lifetime; }
 	const int getID() { return m_id; }
+	Vector3D<float> getDirection() { return m_Direction; }
 	void releaseTarget() { m_TargetBind = nullptr; }
 
 	bool wallchk();
