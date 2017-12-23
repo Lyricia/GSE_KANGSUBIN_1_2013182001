@@ -73,6 +73,11 @@ void KeyInput(unsigned char key, int x, int y)
 		glutLeaveMainLoop();
 		break;
 
+	case 13:
+		if (CurrentScene->GetGamestatus() == GAMESTATUS::STOP)
+			CurrentScene->SetGamestatus(GAMESTATUS::RUNNING);
+		break;
+		
 	case 'r':
 		CurrentScene->releaseScene();
 		Initialize();

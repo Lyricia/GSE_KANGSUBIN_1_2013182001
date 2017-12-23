@@ -125,6 +125,23 @@ public:
 	virtual void render(Renderer* renderer, int texID = NULL);
 };
 
+class Sprite : public Object
+{
+private:
+	double			m_AnimationTime = 0.f;
+	int				m_AnimationSeqX, m_AnimationSeqY;
+	int				m_MaxSeqX, m_MaxSeqY, m_limitSeqX, m_limitSeqY;
+
+public:
+	Sprite() {}
+	Sprite(Vector3D<float> pos) { setPosition(pos); SetSeq(3, 3, 4, 4); }
+	~Sprite() {}
+	virtual void update(const double timeElapsed) {};
+	virtual void render(Renderer* renderer, int texID = NULL);
+	void SetSeq(int mx, int my, int lx, int ly);
+	bool AddSeq(const double timeElapsed);
+};
+
 inline void DrawSolidRectByMatrix(Vector3D<float> pos, Renderer* Renderer, int size, COLOR color, float level)
 {
 	Renderer->DrawSolidRect(pos.x, pos.y, pos.z, size, color.r, color.g, color.b, color.a, level);

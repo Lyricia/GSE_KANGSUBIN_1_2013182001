@@ -47,13 +47,16 @@ void Scene::buildScene()
 	BackGroundTex = m_Renderer->CreatePngTexture("Assets/Image/BackGround.png");
 	ParticleTex = m_Renderer->CreatePngTexture("Assets/Image/effect.png");
 	SnowParticle = m_Renderer->CreatePngTexture("Assets/Image/SnowParticle.png");
+	StartScene[0] = m_Renderer->CreatePngTexture("Assets/Image/StartScene.png");
+	StartScene[1] = m_Renderer->CreatePngTexture("Assets/Image/StartScene2.png");
+	Explosion = m_Renderer->CreatePngTexture("Assets/Image/Explosion1.png");
 
 	// Init Unit Setting
 	Player* dummy = new Player(OBJTYPE::OBJ_CHARACTER, 0, Vector3D<float>{-500, -500, 0});
 	dummy->setLife(-1);
 	m_Player.push_back(dummy);
 
-	GameStatus = GAMESTATUS::RUNNING;
+	GameStatus = GAMESTATUS::STOP;
 
 	m_Sound = new Sound();
 	m_SoundIdx[SOUNDINDEX::BGM] = m_Sound->CreateSound("Assets/Sound/Cheetahmen.mp3");
@@ -88,7 +91,6 @@ void Scene::keyinput(unsigned char key)
 	{
 	case 'p':
 	case 'P':
-
 		if (GameStatus == GAMESTATUS::RUNNING)
 		{
 			m_Sound->PauseAllSound(true);
@@ -111,7 +113,6 @@ void Scene::keyspcialinput(int key)
 {
 	switch (key)
 	{
-	case 1:
 	default:
 		break;
 	}
@@ -121,22 +122,25 @@ void Scene::keyspcialinput(int key)
 // 밖에서 누르고 안에서 업 할 수도 있기 때문에
 void Scene::mouseinput(int button, int state, int x, int y)
 {
-	//m_Player->setPosition(Vector3D<float>{x, y, 0});
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && GAMESTATUS::RUNNING)
+	if (y < 0) 
 	{
-		if (m_BlueTeamCreateTimer > 0 && GameStatus == GAMESTATUS::RUNNING) {
-			m_BlueTeamCreateTimer = 0.f;
-			Vector3D<float> pos = { x, y, 0 };
-			Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 30, pos);
-			p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-			p->setSpeed(300);
-			p->setDefaultColor(COLOR{ 0,0,1,1 });
-			p->setLifetime(10.f);
-			p->setLife(100.f);
-			p->setID(playerid++);
-			p->setTeam(TEAM::BLUE);
-			p->SetSeq(7, 0, 10, 4);
-			m_Player.push_back(p);
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && GAMESTATUS::RUNNING)
+		{
+			if (m_BlueTeamCreateTimer > 0 && GameStatus == GAMESTATUS::RUNNING)
+			{
+				m_BlueTeamCreateTimer = 0.f;
+				Vector3D<float> pos = { x, y, 0 };
+				Player* p = new Player(OBJTYPE::OBJ_CHARACTER, 30, pos);
+				p->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
+				p->setSpeed(300);
+				p->setDefaultColor(COLOR{ 0,0,1,1 });
+				p->setLifetime(10.f);
+				p->setLife(100.f);
+				p->setID(playerid++);
+				p->setTeam(TEAM::BLUE);
+				p->SetSeq(7, 0, 10, 4);
+				m_Player.push_back(p);
+			}
 		}
 	}
 }
@@ -148,7 +152,7 @@ void Scene::update()
 		int bluedeadcount = 0;
 
 		g_Timer->getTimeset();
-		double timeElapsed = g_Timer->getTimeElapsed();
+		double timeElapsed = g_Timer->getTimeElapsed()*0.5;
 
 		for (auto p : m_Player)
 		{
@@ -185,16 +189,9 @@ void Scene::update()
 
 		for (int i = 0; i < 6; ++i)
 		{
-			if (m_Building[i]->isAlive())
+			if (!m_Building[i]->isAlive())
 			{
-				if (m_Building[i]->cooltimeChk(timeElapsed))
-				{
-					Projectile* m = m_Building[i]->ShootBullet();
-					m_Bullet.push_back(m);
-				}
-			}
-			else
-			{
+
 				m_Building[i]->setPosition(Vector3D<float>(-500, -1000, 0));
 				if (i < 3)	reddeadcount++;
 				else		bluedeadcount++;
@@ -223,7 +220,10 @@ void Scene::update()
 						m_ShakeStrength = 10;
 						m_Building[i]->decreaseLife(b->getLife());
 						m_Bullet.remove(b);
-						
+
+						Sprite* s = new Sprite(b->getPosition());
+						m_Sprite.push_back(s);
+
 						m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.3f);
 						break;
 					}
@@ -240,7 +240,9 @@ void Scene::update()
 						m_ShakeStrength = 10;
 						m_Building[i]->decreaseLife(arrow->getLife());
 						m_Arrow.remove(arrow);
-						
+						Sprite* s = new Sprite(arrow->getPosition());
+						m_Sprite.push_back(s);
+
 						m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.3f);
 						break;
 					}
@@ -255,6 +257,20 @@ void Scene::update()
 			{
 				for (int i = 0; i < 6; ++i)
 				{
+					if (m_Building[i]->cooltimeChk(timeElapsed))
+					{
+						if (m_Building[i]->getTeam() != p->getTeam())
+						{
+							Vector3D<float> dir = p->getPosition() - m_Building[i]->getPosition();
+							if (dir.Length() < 300)
+							{
+								Projectile* m = m_Building[i]->ShootBullet();
+								m->setDirection(dir.Normalize());
+								m_Bullet.push_back(m);
+							}
+						}
+					}
+
 					if (m_Building[i]->getTeam() != p->getTeam())
 					{
 						if (m_Building[i]->isAlive() && m_Building[i]->isIntersect(p))
@@ -263,6 +279,9 @@ void Scene::update()
 							m_ShakeStrength = 20;
 							m_Building[i]->decreaseLife(p->getLife());
 							m_Player.remove(p);
+
+							Sprite* s = new Sprite(p->getPosition());
+							m_Sprite.push_back(s);
 
 							m_Sound->PlaySound(m_SoundIdx[SOUNDINDEX::CRASHEFFECT], false, 0.5f);
 							continue;
@@ -354,50 +373,81 @@ void Scene::update()
 		{
 			m_Renderer->SetSceneTransform(0, 0, 1, 1);
 		}
+
+		for (auto sprite : m_Sprite)
+		{
+			if (sprite->AddSeq(timeElapsed))
+			{
+				m_Sprite.remove(sprite);
+				break;
+			}
+		}
 	}
 	else if (GameStatus == GAMESTATUS::PAUSE)
 	{
 		g_Timer->getTimeset();
 		double timeElapsed = g_Timer->getTimeElapsed();
 	}
+
+	else
+	{
+		g_Timer->getTimeset();
+		double timeElapsed = g_Timer->getTimeElapsed();
+		m_ColorTime += timeElapsed;
+	}
 }
 
 void Scene::render()
 {
 	m_Renderer->DrawTexturedRect(0, 0, 0, 820, 0.5f, 0.5f, 0.5f, 1.0f, BackGroundTex, 0.9);
-	m_Renderer->DrawParticleClimate(0, 0, 0, 1, 1, 1, 1, 1, -0.5, -0.5, SnowParticle, m_ClimateTime, 0.01);
 
-	for (int i = 0; i < 3; ++i)
+	if (GameStatus != GAMESTATUS::STOP)
 	{
-		if (m_Building[i]->isAlive())
-			m_Building[i]->render(m_Renderer, BuildingTex[0]);
+		m_Renderer->DrawParticleClimate(0, 0, 0, 1, 1, 1, 1, 1, -0.5, -0.5, SnowParticle, m_ClimateTime, 0.01);
+		m_Renderer->DrawSolidRectGauge(0, 0, 0, 500, 2, 1, 1, 1, 1, 1, 0.8);
+		for (int i = 0; i < 3; ++i)
+		{
+			if (m_Building[i]->isAlive())
+				m_Building[i]->render(m_Renderer, BuildingTex[0]);
+		}
+		for (int i = 3; i < 6; ++i)
+		{
+			if (m_Building[i]->isAlive())
+				m_Building[i]->render(m_Renderer, BuildingTex[1]);
+		}
+
+		for (auto p : m_Player)
+		{
+			if (p->getTeam() == TEAM::RED)
+				p->render(m_Renderer, PlayerTex[0]);
+
+			else if (p->getTeam() == TEAM::BLUE)
+				p->render(m_Renderer, PlayerTex[1]);
+		}
+
+		for (auto bullet : m_Bullet)
+			bullet->render(m_Renderer, ParticleTex);
+
+		for (auto arrow : m_Arrow)
+			arrow->render(m_Renderer, ParticleTex);
+
+		for (auto sprite : m_Sprite)
+			sprite->render(m_Renderer, Explosion);
+
+
+		if (GameStatus == GAMESTATUS::BLUEWIN)
+			m_Renderer->DrawTextW(-10, 300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You Win!\nPress R to Restart");
+		else if (GameStatus == GAMESTATUS::REDWIN)
+			m_Renderer->DrawTextW(-10, -300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You LOSE!\nPress R to Restart");
+		else if (GameStatus == GAMESTATUS::PAUSE)
+			m_Renderer->DrawTextW(-10, 100, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "PAUSE\nPress P to Resume");
 	}
-	for (int i = 3; i < 6; ++i)
+
+	else if (GameStatus == GAMESTATUS::STOP)
 	{
-		if (m_Building[i]->isAlive())
-			m_Building[i]->render(m_Renderer, BuildingTex[1]);
+		float t = (sin(m_ColorTime / 3) + 1) / 2;
+		float t2 = (cos(m_ColorTime / 5) + 1) / 2;
+		m_Renderer->DrawTexturedRect(0, 0, 0, 512, 1.f, 1.f, 1.f, 1.f, StartScene[0], 0.5);
+		m_Renderer->DrawTexturedRect(0, 0, 0, 512, t, 1 - t2, t2, (sin(m_ColorTime / 2) + 1) / 2, StartScene[1], 0.5);
 	}
-
-	for (auto p : m_Player)
-	{
-		if (p->getTeam() == TEAM::RED) 
-			p->render(m_Renderer, PlayerTex[0]);
-
-		else if (p->getTeam() == TEAM::BLUE)
-			p->render(m_Renderer, PlayerTex[1]);
-	}
-
-	for (auto bullet : m_Bullet)
-		bullet->render(m_Renderer, ParticleTex);
-	
-	for (auto arrow : m_Arrow)
-		arrow->render(m_Renderer, ParticleTex);
-	
-	if (GameStatus == GAMESTATUS::BLUEWIN)
-		m_Renderer->DrawTextW(-10, 300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You Win!");
-	else if(GameStatus == GAMESTATUS::REDWIN)
-		m_Renderer->DrawTextW(-10, -300, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "You LOSE!");
-	else if(GameStatus == GAMESTATUS::PAUSE)
-		m_Renderer->DrawTextW(-10, 100, GLUT_BITMAP_HELVETICA_18, 1, 0, 1, "PAUSE");
 }
-

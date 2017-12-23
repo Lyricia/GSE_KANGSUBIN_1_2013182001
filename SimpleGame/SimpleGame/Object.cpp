@@ -128,7 +128,7 @@ Projectile* Building::ShootBullet()
 	b->setLifetime(5);
 	b->setLife(20);
 	b->setDirection(Vector3D<float>((rand() % 9 - 4.5f), (rand() % 9 - 4.5f), 0.f).Normalize());
-	b->setSpeed(50);
+	b->setSpeed(150);
 	b->setTeam(getTeam());
 	if (getTeam() == TEAM::RED) 
 	{
@@ -147,7 +147,7 @@ bool Building::cooltimeChk(const double timeElapsed)
 	if (m_damagedtime > 0)
 		m_damagedtime -= timeElapsed;
 	
-	if (m_cooltime > 5)
+	if (m_cooltime > 2)
 	{
 		m_cooltime = 0;
 		return true;
@@ -188,4 +188,41 @@ void Projectile::render(Renderer* renderer, int texID)
 {
 	renderer->DrawParticle(m_Position.x, m_Position.y, m_Position.z, 10, 1, 1, 1, 1, -m_Direction.x, -m_Direction.y, texID, m_AnimationTime,0.2);
 	DrawSolidRectByMatrix(m_Position, renderer, m_Size, m_Color, 0.3);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void Sprite::render(Renderer * renderer, int texID)
+{
+	DrawTexturedSeqRectByMatrix(m_Position, renderer, 40, { 1,1,1 }, m_AnimationSeqX, m_AnimationSeqY, m_limitSeqX, m_limitSeqY, texID, 0.1);
+}
+
+void Sprite::SetSeq(int mx, int my, int lx, int ly)
+{
+	m_AnimationSeqX = 0;
+	m_AnimationSeqY = 0;
+	m_MaxSeqX = mx;
+	m_MaxSeqY = my;
+	m_limitSeqX = lx;
+	m_limitSeqY = ly;
+}
+
+bool Sprite::AddSeq(const double timeElapsed)
+{
+	m_AnimationTime += timeElapsed;
+	if (m_AnimationTime > 0.5) {
+		m_AnimationTime = 0;
+		m_AnimationSeqX++;
+		if (m_AnimationSeqX > m_MaxSeqX)
+		{
+			m_AnimationSeqY++;
+			m_AnimationSeqX = 0;
+		}
+		if (m_AnimationSeqY > m_MaxSeqY)
+		{
+			return true;
+		}
+	}
+	return false;
 }

@@ -13,6 +13,7 @@ private:
 	list<Player*>		m_Player;
 	list<Projectile*>	m_Bullet;
 	list<Projectile*>	m_Arrow;
+	list<Sprite*>		m_Sprite;
 
 	Renderer*	m_Renderer = nullptr;
 	Timer*		g_Timer = nullptr;
@@ -23,12 +24,15 @@ private:
 	int			BackGroundTex;
 	int			ParticleTex;
 	int			SnowParticle;
+	int			StartScene[2];
+	int			Explosion;
 
 	double		m_RedTeamCreateTimer = 0.f;
 	double		m_BlueTeamCreateTimer = 0.f;
 	double		m_AnimationTime = 0.f;
 	double		m_ShakeTime = 0.f;
 	double		m_ClimateTime = 0.f;
+	double		m_ColorTime = 0.f;
 	int			m_ShakeStrength = 0;
 
 	int			p1AnimationSeqX = 0, p1AnimationSeqY = 0;
@@ -51,6 +55,9 @@ public:
 	void keyinput(unsigned char key);
 	void keyspcialinput(int key);
 	void mouseinput(int button, int state, int x, int y);
+
+	GAMESTATUS GetGamestatus() { return GameStatus; }
+	void SetGamestatus(GAMESTATUS s) { GameStatus = s; }
 
 	void update();
 	void render();
